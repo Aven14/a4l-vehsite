@@ -40,11 +40,15 @@ export function InteractiveBackground() {
     }
 
     // Draw contour lines using marching squares avec cases correctes
-    const contourLevels = [-80, -60, -40, -20, 0, 20, 40, 60, 80]
+    const contourLevels = [-100, -90, -80, -70, -60, -50, -40, -30, -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     
     for (const level of contourLevels) {
-      ctx.lineWidth = level % 40 === 0 ? 1.5 : 1
-      ctx.strokeStyle = level % 40 === 0 ? 'rgba(255, 255, 255, 0.22)' : 'rgba(255, 255, 255, 0.12)'
+      const isMajor = level % 40 === 0
+      ctx.lineWidth = isMajor ? 1.2 : 0.8
+      ctx.strokeStyle = isMajor ? 'rgba(255, 255, 255, 0.18)' : 'rgba(255, 255, 255, 0.10)'
+
+      // Commencer un seul path pour tout ce niveau (optimisation)
+      ctx.beginPath()
 
       for (let y = 0; y < rows - 1; y++) {
         for (let x = 0; x < cols - 1; x++) {
@@ -66,10 +70,8 @@ export function InteractiveBackground() {
           const bottomX = x + (level - v4) / (v3 - v4 + 0.001)
           const leftY = y + (level - v1) / (v4 - v1 + 0.001)
           const rightY = y + (level - v2) / (v3 - v2 + 0.001)
-
-          // Dessiner selon le cas avec la bonne orientation
-          ctx.beginPath()
           
+          // Dessiner selon le cas avec la bonne orientation
           switch (caseIndex) {
             case 1: case 14: // Gauche -> Bas
               ctx.moveTo(x * gridSize, leftY * gridSize)
@@ -90,8 +92,6 @@ export function InteractiveBackground() {
             case 5: // Gauche -> Haut ET Bas -> Droite (deux lignes)
               ctx.moveTo(x * gridSize, leftY * gridSize)
               ctx.lineTo(topX * gridSize, y * gridSize)
-              ctx.stroke()
-              ctx.beginPath()
               ctx.moveTo(bottomX * gridSize, (y + 1) * gridSize)
               ctx.lineTo((x + 1) * gridSize, rightY * gridSize)
               break
@@ -106,16 +106,15 @@ export function InteractiveBackground() {
             case 10: // Haut -> Droite ET Gauche -> Bas (deux lignes)
               ctx.moveTo(topX * gridSize, y * gridSize)
               ctx.lineTo((x + 1) * gridSize, rightY * gridSize)
-              ctx.stroke()
-              ctx.beginPath()
               ctx.moveTo(x * gridSize, leftY * gridSize)
               ctx.lineTo(bottomX * gridSize, (y + 1) * gridSize)
               break
           }
-          
-          ctx.stroke()
         }
       }
+
+      // Un seul stroke pour tout le niveau (beaucoup plus rapide)
+      ctx.stroke()
     }
   }, [])
 
