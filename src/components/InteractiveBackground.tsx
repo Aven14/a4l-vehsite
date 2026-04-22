@@ -7,25 +7,32 @@ export function InteractiveBackground() {
   const animationFrameId = useRef<number>()
   const timeRef = useRef<number>(0)
   const terrainRef = useRef<Float32Array | null>(null)
-  const terrainWidth = 200
-  const terrainHeight = 200
+  const terrainWidth = 400
+  const terrainHeight = 400
 
   // Generate smooth noise terrain
   const generateTerrain = useCallback((time: number) => {
     const terrain = new Float32Array(terrainWidth * terrainHeight)
-    const timeFactor = time * 0.00015
+    const timeFactor = time * 0.00008 // Slowed down animation
 
     for (let y = 0; y < terrainHeight; y++) {
       for (let x = 0; x < terrainWidth; x++) {
         let height = 0
         
-        // Multiple octaves of sine waves for organic terrain
-        height += Math.sin(x * 0.05 + timeFactor * 2) * Math.cos(y * 0.05 + timeFactor * 1.5) * 50
-        height += Math.sin(x * 0.08 - timeFactor * 1.8) * Math.sin(y * 0.06 + timeFactor * 2.2) * 35
-        height += Math.cos(x * 0.03 + y * 0.04 + timeFactor * 1.2) * 45
-        height += Math.sin((x + y) * 0.02 + timeFactor * 2.5) * 40
-        height += Math.cos(x * 0.06 - y * 0.03 + timeFactor * 1.7) * 30
-        height += Math.sin(x * 0.04 + timeFactor * 3) * Math.cos(y * 0.07 - timeFactor * 2.8) * 25
+        // Multiple octaves with more complex frequencies for organic shapes
+        height += Math.sin(x * 0.03 + timeFactor * 1.5) * Math.cos(y * 0.04 + timeFactor * 1.2) * 60
+        height += Math.sin(x * 0.05 - timeFactor * 1.3) * Math.sin(y * 0.03 + timeFactor * 1.8) * 45
+        height += Math.cos(x * 0.02 + y * 0.03 + timeFactor * 0.9) * 55
+        height += Math.sin((x + y) * 0.015 + timeFactor * 2) * 50
+        height += Math.cos(x * 0.04 - y * 0.025 + timeFactor * 1.4) * 40
+        height += Math.sin(x * 0.025 + timeFactor * 2.5) * Math.cos(y * 0.035 - timeFactor * 2.2) * 35
+        
+        // Add more irregular features
+        height += Math.sin(x * 0.07 + y * 0.05 + timeFactor * 1.7) * 25
+        height += Math.cos(x * 0.06 - y * 0.04 - timeFactor * 1.1) * 30
+        height += Math.sin((x * 0.08 - y * 0.06) + timeFactor * 2.3) * 20
+        height += Math.cos((x + y) * 0.025 + timeFactor * 0.7) * 45
+        height += Math.sin(x * 0.035 + y * 0.02 + timeFactor * 1.9) * 38
         
         terrain[y * terrainWidth + x] = height
       }
