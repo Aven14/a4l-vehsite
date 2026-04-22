@@ -18,13 +18,12 @@ export function InteractiveBackground() {
 
     const accentRgb = '17, 134, 208'
     const gridSize = 50
-    const waveAmplitude = 8
-    const waveSpeed = 0.001
-    const waveFrequency = 0.02
+    const waveAmplitude = 12
+    const waveSpeed = 0.0008
+    const waveFrequency = 0.015
 
     // Calculate wave offset for each grid line
     const drawWaveGrid = () => {
-      ctx.strokeStyle = `rgba(${accentRgb}, 0.04)`
       ctx.lineWidth = 1
 
       // Draw vertical lines with wave effect
@@ -32,16 +31,24 @@ export function InteractiveBackground() {
         ctx.beginPath()
         
         for (let y = 0; y <= height; y += 5) {
-          // Calculate wave offset based on position and time
+          // Calculate distance from mouse for interactive effect
           const dx = x - mousePosition.current.x
           const dy = y - mousePosition.current.y
           const distance = Math.sqrt(dx * dx + dy * dy)
           const mouseInfluence = Math.max(0, 1 - distance / 400)
 
-          const waveOffset = Math.sin(y * waveFrequency + time * waveSpeed) * waveAmplitude * (1 + mouseInfluence * 0.5) +
-                            Math.cos(y * waveFrequency * 0.5 + time * waveSpeed * 0.7) * waveAmplitude * 0.5
+          // Multiple wave layers for 3D effect
+          const waveOffset = 
+            Math.sin(y * waveFrequency + time * waveSpeed) * waveAmplitude * (1 + mouseInfluence * 0.8) +
+            Math.cos(y * waveFrequency * 0.7 + time * waveSpeed * 1.2) * waveAmplitude * 0.6 +
+            Math.sin((x + y) * 0.01 + time * waveSpeed * 0.5) * waveAmplitude * 0.4 // Diagonal wave
 
           const adjustedX = x + waveOffset
+
+          // Vary opacity based on wave position for 3D depth effect
+          const depthFactor = Math.sin(y * 0.005 + time * 0.0003) * 0.5 + 0.5
+          const alpha = 0.03 + depthFactor * 0.04
+          ctx.strokeStyle = `rgba(${accentRgb}, ${alpha})`
 
           if (y === 0) {
             ctx.moveTo(adjustedX, y)
@@ -58,16 +65,24 @@ export function InteractiveBackground() {
         ctx.beginPath()
         
         for (let x = 0; x <= width; x += 5) {
-          // Calculate wave offset based on position and time
+          // Calculate distance from mouse for interactive effect
           const dx = x - mousePosition.current.x
           const dy = y - mousePosition.current.y
           const distance = Math.sqrt(dx * dx + dy * dy)
           const mouseInfluence = Math.max(0, 1 - distance / 400)
 
-          const waveOffset = Math.sin(x * waveFrequency + time * waveSpeed) * waveAmplitude * (1 + mouseInfluence * 0.5) +
-                            Math.cos(x * waveFrequency * 0.5 + time * waveSpeed * 0.7) * waveAmplitude * 0.5
+          // Multiple wave layers for 3D effect
+          const waveOffset = 
+            Math.sin(x * waveFrequency + time * waveSpeed) * waveAmplitude * (1 + mouseInfluence * 0.8) +
+            Math.cos(x * waveFrequency * 0.7 + time * waveSpeed * 1.2) * waveAmplitude * 0.6 +
+            Math.sin((x + y) * 0.01 + time * waveSpeed * 0.5) * waveAmplitude * 0.4 // Diagonal wave
 
           const adjustedY = y + waveOffset
+
+          // Vary opacity based on wave position for 3D depth effect
+          const depthFactor = Math.sin(x * 0.005 + time * 0.0003) * 0.5 + 0.5
+          const alpha = 0.03 + depthFactor * 0.04
+          ctx.strokeStyle = `rgba(${accentRgb}, ${alpha})`
 
           if (x === 0) {
             ctx.moveTo(x, adjustedY)
@@ -76,6 +91,38 @@ export function InteractiveBackground() {
           }
         }
         
+        ctx.stroke()
+      }
+
+      // Draw diagonal wave lines for enhanced 3D effect
+      ctx.lineWidth = 0.5
+      for (let i = -height; i <= width + height; i += gridSize * 2) {
+        // Diagonal lines from bottom-left to top-right
+        ctx.beginPath()
+        for (let x = 0; x <= width; x += 5) {
+          const baseY = i - x
+          if (baseY < 0 || baseY > height) continue
+
+          const dx = x - mousePosition.current.x
+          const dy = baseY - mousePosition.current.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+          const mouseInfluence = Math.max(0, 1 - distance / 400)
+
+          const waveOffset = 
+            Math.sin((x + baseY) * 0.008 + time * waveSpeed * 1.5) * waveAmplitude * 1.2 * (1 + mouseInfluence * 0.6) +
+            Math.cos((x - baseY) * 0.005 + time * waveSpeed * 0.8) * waveAmplitude * 0.5
+
+          const adjustedY = baseY + waveOffset
+          const depthFactor = Math.sin((x + baseY) * 0.003 + time * 0.0002) * 0.5 + 0.5
+          const alpha = 0.02 + depthFactor * 0.03
+          ctx.strokeStyle = `rgba(${accentRgb}, ${alpha})`
+
+          if (x === 0 || baseY < 0) {
+            ctx.moveTo(x, adjustedY)
+          } else {
+            ctx.lineTo(x, adjustedY)
+          }
+        }
         ctx.stroke()
       }
     }
@@ -90,15 +137,15 @@ export function InteractiveBackground() {
         0,
         mousePosition.current.x,
         mousePosition.current.y,
-        250
+        300
       )
-      glowGradient.addColorStop(0, `rgba(${accentRgb}, 0.06)`)
-      glowGradient.addColorStop(0.5, `rgba(${accentRgb}, 0.02)`)
+      glowGradient.addColorStop(0, `rgba(${accentRgb}, 0.08)`)
+      glowGradient.addColorStop(0.3, `rgba(${accentRgb}, 0.03)`)
       glowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
       
       ctx.fillStyle = glowGradient
       ctx.beginPath()
-      ctx.arc(mousePosition.current.x, mousePosition.current.y, 250, 0, Math.PI * 2)
+      ctx.arc(mousePosition.current.x, mousePosition.current.y, 300, 0, Math.PI * 2)
       ctx.fill()
     }
   }, [])
