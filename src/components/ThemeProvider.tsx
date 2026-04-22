@@ -29,13 +29,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       document.documentElement.style.setProperty('--accent-color-700', `rgb(${darken(r, 0.2)}, ${darken(g, 0.2)}, ${darken(b, 0.2)})`)
       document.documentElement.style.setProperty('--accent-color-rgb', `${r}, ${g}, ${b}`)
     } else {
-      // Réinitialiser aux valeurs par défaut (violet)
-      document.documentElement.style.setProperty('--accent-color', '#a855f7')
-      document.documentElement.style.setProperty('--accent-color-400', '#c084fc')
-      document.documentElement.style.setProperty('--accent-color-500', '#a855f7')
-      document.documentElement.style.setProperty('--accent-color-600', '#9333ea')
-      document.documentElement.style.setProperty('--accent-color-700', '#7e22ce')
-      document.documentElement.style.setProperty('--accent-color-rgb', '168, 85, 247')
+      // Réinitialiser aux valeurs par défaut (bleu)
+      document.documentElement.style.setProperty('--accent-color', '#1186d0')
+      document.documentElement.style.setProperty('--accent-color-400', '#3fa3e0')
+      document.documentElement.style.setProperty('--accent-color-500', '#1186d0')
+      document.documentElement.style.setProperty('--accent-color-600', '#0f73b3')
+      document.documentElement.style.setProperty('--accent-color-700', '#0b5e92')
+      document.documentElement.style.setProperty('--accent-color-rgb', '17, 134, 208')
     }
   }, [user?.themeColor])
 

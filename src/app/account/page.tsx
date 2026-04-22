@@ -14,7 +14,7 @@ function AccountContent() {
   const [form, setForm] = useState({
     username: '',
     email: '',
-    themeColor: '#a855f7', // Violet par défaut
+    themeColor: '#1186d0', // Bleu par défaut
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
@@ -31,7 +31,7 @@ function AccountContent() {
         ...f,
         username: session.user?.name || '',
         email: session.user?.email || '',
-        themeColor: user.themeColor || '#a855f7',
+        themeColor: user.themeColor || '#1186d0',
       }))
     }
   }, [session])
@@ -278,7 +278,7 @@ function AccountContent() {
                     type="text"
                     value={form.themeColor}
                     onChange={(e) => setForm({ ...form, themeColor: e.target.value })}
-                    placeholder="#a855f7"
+                    placeholder="#1186d0"
                     className="w-full bg-dark-300 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-blue-500 focus:outline-none font-mono"
                   />
                   <p className="text-xs text-gray-500 mt-1">Choisissez une couleur pour personnaliser le thème du site</p>

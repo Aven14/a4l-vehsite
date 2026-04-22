@@ -11,16 +11,16 @@ const config: Config = {
       colors: {
         // Utiliser les variables CSS pour que le thème change dynamiquement
         primary: {
-          50: '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          300: '#d8b4fe',
+          50: '#eef8ff',
+          100: '#d8eeff',
+          200: '#b8e0ff',
+          300: '#8bcbf4',
           400: 'var(--accent-color-400)',
           500: 'var(--accent-color-500)',
           600: 'var(--accent-color-600)',
           700: 'var(--accent-color-700)',
-          800: '#6b21a8',
-          900: '#581c87',
+          800: '#0a4b74',
+          900: '#083d5f',
         },
         dark: {
           100: '#1e1e1e',

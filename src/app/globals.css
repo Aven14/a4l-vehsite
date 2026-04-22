@@ -8,12 +8,12 @@
   --bg-primary: #0a0a0a;
   --bg-secondary: #121212;
   --bg-card: #181818;
-  --accent-color: #a855f7; /* Violet par défaut */
-  --accent-color-400: #c084fc;
-  --accent-color-500: #a855f7;
-  --accent-color-600: #9333ea;
-  --accent-color-700: #7e22ce;
-  --accent-color-rgb: 168, 85, 247;
+  --accent-color: #1186d0; /* Bleu par défaut */
+  --accent-color-400: #3fa3e0;
+  --accent-color-500: #1186d0;
+  --accent-color-600: #0f73b3;
+  --accent-color-700: #0b5e92;
+  --accent-color-rgb: 17, 134, 208;
   --accent-gold: #d4af37;
 }
 
@@ -50,8 +50,8 @@ body {
 /* Effet de grille militaire */
 .military-grid {
   background-image: 
-    linear-gradient(rgba(168, 85, 247, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(168, 85, 247, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(17, 134, 208, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 134, 208, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
 }
 
@@ -59,23 +59,23 @@ body {
 .btn-primary {
   background: linear-gradient(to right, var(--accent-color-600), var(--accent-color-500));
   @apply text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg;
-  box-shadow: 0 10px 15px -3px rgba(var(--accent-color-rgb, 168, 85, 247), 0.2);
+  box-shadow: 0 10px 15px -3px rgba(var(--accent-color-rgb, 17, 134, 208), 0.2);
 }
 
 .btn-primary:hover {
   background: linear-gradient(to right, var(--accent-color-500), var(--accent-color-400));
-  box-shadow: 0 10px 15px -3px rgba(var(--accent-color-rgb, 168, 85, 247), 0.4);
+  box-shadow: 0 10px 15px -3px rgba(var(--accent-color-rgb, 17, 134, 208), 0.4);
 }
 
 .btn-secondary {
   @apply bg-dark-100 border font-semibold py-3 px-6 rounded-lg transition-all duration-300;
-  border-color: rgba(var(--accent-color-rgb, 168, 85, 247), 0.3);
+  border-color: rgba(var(--accent-color-rgb, 17, 134, 208), 0.3);
   color: var(--accent-color-400);
 }
 
 .btn-secondary:hover {
-  background: rgba(var(--accent-color-rgb, 168, 85, 247), 0.1);
-  border-color: rgba(var(--accent-color-rgb, 168, 85, 247), 0.5);
+  background: rgba(var(--accent-color-rgb, 17, 134, 208), 0.1);
+  border-color: rgba(var(--accent-color-rgb, 17, 134, 208), 0.5);
 }
 
 /* Cards */
@@ -84,7 +84,7 @@ body {
 }
 
 .card:hover {
-  border-color: rgba(var(--accent-color-rgb, 168, 85, 247), 0.3);
+  border-color: rgba(var(--accent-color-rgb, 17, 134, 208), 0.3);
 }
 
 .card-hover {
@@ -92,5 +92,5 @@ body {
 }
 
 .card-hover:hover {
-  box-shadow: 0 20px 25px -5px rgba(var(--accent-color-rgb, 168, 85, 247), 0.1);
+  box-shadow: 0 20px 25px -5px rgba(var(--accent-color-rgb, 17, 134, 208), 0.1);
 }
