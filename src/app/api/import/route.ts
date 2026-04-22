@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { makeUniqueId } from '@/lib/slug'
 
 // POST - Importer des véhicules depuis JSON (admin)
 export async function POST(req: NextRequest) {
@@ -25,13 +26,32 @@ export async function POST(req: NextRequest) {
         // Créer ou récupérer la marque
         let brand = await prisma.brand.findUnique({ where: { name: v.brand } })
         if (!brand) {
-          brand = await prisma.brand.create({ data: { name: v.brand } })
+          const brandId = await makeUniqueId(
+            v.brand,
+            async (candidate) => {
+              const existing = await prisma.brand.findUnique({ where: { id: candidate } })
+              return !!existing
+            },
+            'brand'
+          )
+          brand = await prisma.brand.create({ data: { id: brandId, name: v.brand } })
         }
+
+        const vehicleName = v.name || v.model || 'Sans nom'
+        const vehicleId = await makeUniqueId(
+          `${brand.name}-${vehicleName}`,
+          async (candidate) => {
+            const existing = await prisma.vehicle.findUnique({ where: { id: candidate } })
+            return !!existing
+          },
+          'vehicle'
+        )
 
         // Créer le véhicule
         await prisma.vehicle.create({
           data: {
-            name: v.name || v.model || 'Sans nom',
+            id: vehicleId,
+            name: vehicleName,
             description: v.description || null,
             price: parseInt(v.price) || 0,
             power: v.power ? parseInt(v.power) : null,

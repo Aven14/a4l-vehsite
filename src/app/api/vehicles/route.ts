@@ -3,6 +3,7 @@ import { query } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { makeUniqueId, toSlug } from '@/lib/slug'
 
 // Force dynamic pour éviter les problèmes au build
 export const dynamic = 'force-dynamic'
@@ -68,8 +69,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 })
   }
 
+  const brand = await prisma.brand.findUnique({ where: { id: brandId } })
+  if (!brand) {
+    return NextResponse.json({ error: 'Marque introuvable' }, { status: 404 })
+  }
+
+  const idBase = `${brand.name}-${name}`
+  const id = await makeUniqueId(
+    idBase,
+    async (candidate) => {
+      const existing = await prisma.vehicle.findUnique({ where: { id: candidate } })
+      return !!existing
+    },
+    `vehicle-${toSlug(brand.name) || 'brand'}`
+  )
+
   const vehicle = await prisma.vehicle.create({
     data: {
+      id,
       name,
       description,
       price,

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { query } from '@/lib/db'
 import { authOptions } from '@/lib/auth'
+import { makeUniqueId } from '@/lib/slug'
 
 export const dynamic = 'force-dynamic'
 
@@ -96,21 +97,30 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Créer le concessionnaire
-    const dealershipResult = await query(
-      `INSERT INTO "Dealership" (name, description, logo, "createdAt", "updatedAt") 
-       VALUES ($1, $2, NULL, NOW(), NOW()) 
-       RETURNING id;`,
-      [name, description || null]
+    const dealershipId = await makeUniqueId(
+      name,
+      async (candidate) => {
+        const existing = await query(`SELECT id FROM "Dealership" WHERE id = $1`, [candidate])
+        return existing.rows.length > 0
+      },
+      'dealership'
     )
 
-    const dealershipId = dealershipResult.rows[0].id
+    // Créer le concessionnaire
+    const dealershipResult = await query(
+      `INSERT INTO "Dealership" (id, name, description, logo, "createdAt", "updatedAt") 
+       VALUES ($1, $2, $3, NULL, NOW(), NOW()) 
+       RETURNING id;`,
+      [dealershipId, name, description || null]
+    )
+
+    const createdDealershipId = dealershipResult.rows[0].id
 
     // Créer l'association propriétaire
     await query(
       `INSERT INTO "UserDealership" ("userId", "dealershipId", role, "createdAt") 
        VALUES ($1, $2, 'owner', NOW());`,
-      [userId, dealershipId]
+      [userId, createdDealershipId]
     )
 
     // Récupérer les détails complets du concessionnaire
@@ -122,7 +132,7 @@ export async function POST(req: NextRequest) {
        LEFT JOIN "UserDealership" ud ON d.id = ud."dealershipId"
        LEFT JOIN "User" u ON ud."userId" = u.id
        WHERE d.id = $1 AND ud.role = 'owner'`,
-      [dealershipId]
+      [createdDealershipId]
     )
 
     const dealership = result.rows[0]

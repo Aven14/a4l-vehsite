@@ -5,6 +5,30 @@ const path = require('path')
 
 const prisma = new PrismaClient()
 
+function toSlug(value) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-')
+}
+
+async function makeUniqueId(baseValue, exists, fallbackPrefix = 'item') {
+  const base = toSlug(baseValue) || `${fallbackPrefix}-${Date.now()}`
+  if (!(await exists(base))) {
+    return base
+  }
+
+  let i = 2
+  while (await exists(`${base}-${i}`)) {
+    i++
+  }
+
+  return `${base}-${i}`
+}
+
 async function main() {
   // Créer les rôles système
   const superadminRole = await prisma.role.upsert({
@@ -97,10 +121,19 @@ async function main() {
     // Créer toutes les marques d'abord
     for (const vehicle of vehiclesData) {
       if (vehicle.brand && !brandsMap.has(vehicle.brand)) {
+        const brandId = await makeUniqueId(
+          vehicle.brand,
+          async (candidate) => {
+            const existing = await prisma.brand.findUnique({ where: { id: candidate } })
+            return !!existing
+          },
+          'brand'
+        )
         const brand = await prisma.brand.upsert({
           where: { name: vehicle.brand },
           update: {},
           create: {
+            id: brandId,
             name: vehicle.brand,
           },
         })
@@ -152,9 +185,18 @@ async function main() {
           })
           updated++
         } else {
+          const vehicleId = await makeUniqueId(
+            `${vehicle.brand}-${vehicle.name}`,
+            async (candidate) => {
+              const existingById = await prisma.vehicle.findUnique({ where: { id: candidate } })
+              return !!existingById
+            },
+            'vehicle'
+          )
           // Créer
           await prisma.vehicle.create({
             data: {
+              id: vehicleId,
               name: vehicle.name,
               price: vehicle.price,
               power: vehicle.power || null,

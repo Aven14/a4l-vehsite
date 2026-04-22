@@ -3,6 +3,7 @@ import { query } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { makeUniqueId } from '@/lib/slug'
 
 // Force dynamic pour éviter les problèmes au build
 export const dynamic = 'force-dynamic'
@@ -39,8 +40,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Nom requis' }, { status: 400 })
   }
 
+  const id = await makeUniqueId(
+    name,
+    async (candidate) => {
+      const existing = await prisma.brand.findUnique({ where: { id: candidate } })
+      return !!existing
+    },
+    'brand'
+  )
+
   const brand = await prisma.brand.create({
     data: { 
+      id,
       name, 
       logo,
       // @ts-ignore
