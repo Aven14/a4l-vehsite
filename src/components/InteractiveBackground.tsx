@@ -6,6 +6,90 @@ export function InteractiveBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationFrameId = useRef<number>()
   const timeRef = useRef<number>(0)
+  const terrainRef = useRef<Float32Array | null>(null)
+  const terrainWidth = 200
+  const terrainHeight = 200
+
+  // Generate smooth noise terrain
+  const generateTerrain = useCallback((time: number) => {
+    const terrain = new Float32Array(terrainWidth * terrainHeight)
+    const timeFactor = time * 0.00015
+
+    for (let y = 0; y < terrainHeight; y++) {
+      for (let x = 0; x < terrainWidth; x++) {
+        let height = 0
+        
+        // Multiple octaves of sine waves for organic terrain
+        height += Math.sin(x * 0.05 + timeFactor * 2) * Math.cos(y * 0.05 + timeFactor * 1.5) * 50
+        height += Math.sin(x * 0.08 - timeFactor * 1.8) * Math.sin(y * 0.06 + timeFactor * 2.2) * 35
+        height += Math.cos(x * 0.03 + y * 0.04 + timeFactor * 1.2) * 45
+        height += Math.sin((x + y) * 0.02 + timeFactor * 2.5) * 40
+        height += Math.cos(x * 0.06 - y * 0.03 + timeFactor * 1.7) * 30
+        height += Math.sin(x * 0.04 + timeFactor * 3) * Math.cos(y * 0.07 - timeFactor * 2.8) * 25
+        
+        terrain[y * terrainWidth + x] = height
+      }
+    }
+    
+    return terrain
+  }, [])
+
+  // Marching squares algorithm for contour lines
+  const drawContourLines = useCallback((ctx: CanvasRenderingContext2D, terrain: Float32Array, width: number, height: number, elevation: number) => {
+    const cellWidth = width / terrainWidth
+    const cellHeight = height / terrainHeight
+
+    ctx.beginPath()
+
+    for (let y = 0; y < terrainHeight - 1; y++) {
+      for (let x = 0; x < terrainWidth - 1; x++) {
+        const idx = y * terrainWidth + x
+        
+        // Get values at corners
+        const v1 = terrain[idx]
+        const v2 = terrain[idx + 1]
+        const v3 = terrain[idx + terrainWidth + 1]
+        const v4 = terrain[idx + terrainWidth]
+
+        // Check if contour passes through this cell
+        const above = [v1 > elevation, v2 > elevation, v3 > elevation, v4 > elevation]
+        
+        // Calculate edge intersections
+        const edges: number[][] = []
+        
+        if (above[0] !== above[1]) { // Top edge
+          const t = (elevation - v1) / (v2 - v1)
+          edges.push([x + t, y])
+        }
+        if (above[1] !== above[2]) { // Right edge
+          const t = (elevation - v2) / (v3 - v2)
+          edges.push([x + 1, y + t])
+        }
+        if (above[2] !== above[3]) { // Bottom edge
+          const t = (elevation - v3) / (v4 - v3)
+          edges.push([x + t, y + 1])
+        }
+        if (above[0] !== above[3]) { // Left edge
+          const t = (elevation - v1) / (v4 - v1)
+          edges.push([x, y + t])
+        }
+
+        // Draw line segments
+        if (edges.length === 2) {
+          ctx.moveTo(edges[0][0] * cellWidth, edges[0][1] * cellHeight)
+          ctx.lineTo(edges[1][0] * cellWidth, edges[1][1] * cellHeight)
+        } else if (edges.length === 4) {
+          // Saddle point - connect opposite edges
+          ctx.moveTo(edges[0][0] * cellWidth, edges[0][1] * cellHeight)
+          ctx.lineTo(edges[2][0] * cellWidth, edges[2][1] * cellHeight)
+          ctx.moveTo(edges[1][0] * cellWidth, edges[1][1] * cellHeight)
+          ctx.lineTo(edges[3][0] * cellWidth, edges[3][1] * cellHeight)
+        }
+      }
+    }
+
+    ctx.stroke()
+  }, [])
 
   const drawTopographicMap = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number, time: number) => {
     ctx.clearRect(0, 0, width, height)
@@ -14,74 +98,31 @@ export function InteractiveBackground() {
     ctx.fillStyle = '#0a0a0a'
     ctx.fillRect(0, 0, width, height)
 
-    const timeSpeed = 0.0003
-    const numLines = 25
-    const lineSpacing = height / (numLines - 1)
+    // Generate terrain
+    const terrain = generateTerrain(time)
+    terrainRef.current = terrain
 
-    // Draw main topographic contour lines
-    ctx.lineWidth = 1
+    // Draw contour lines at different elevations
+    const contourInterval = 15
+    const minElevation = -100
+    const maxElevation = 100
 
-    for (let i = 0; i < numLines; i++) {
-      const baseY = i * lineSpacing
-
+    for (let elevation = minElevation; elevation <= maxElevation; elevation += contourInterval) {
       ctx.beginPath()
-
-      for (let x = 0; x <= width; x += 3) {
-        // Create topographic wave patterns - lines going left to right with curves
-        let y = baseY
-
-        // Multiple overlapping waves for organic topographic feel
-        y += Math.sin(x * 0.004 + time * timeSpeed * 2 + i * 0.4) * 25
-        y += Math.cos(x * 0.006 + time * timeSpeed * 1.5 + i * 0.3) * 18
-        y += Math.sin(x * 0.003 + time * timeSpeed + i * 0.2) * 30
-        y += Math.cos(x * 0.008 + time * timeSpeed * 2.5 + i * 0.5) * 12
-        y += Math.sin(x * 0.002 + time * timeSpeed * 0.5 + i * 0.6) * 35
-
-        // Add some hill/mountain bumps
-        const hill1X = width * 0.3 + Math.sin(time * timeSpeed * 1.5) * 80
-        const hill1Y = height * 0.4
-        const dist1 = Math.sqrt(Math.pow(x - hill1X, 2) + Math.pow(baseY - hill1Y, 2))
-        y += Math.exp(-dist1 * dist1 / (2 * 150 * 150)) * 60
-
-        const hill2X = width * 0.7 + Math.cos(time * timeSpeed * 1.2) * 100
-        const hill2Y = height * 0.7
-        const dist2 = Math.sqrt(Math.pow(x - hill2X, 2) + Math.pow(baseY - hill2Y, 2))
-        y += Math.exp(-dist2 * dist2 / (2 * 180 * 180)) * 70
-
-        const hill3X = width * 0.5 + Math.sin(time * timeSpeed * 1.8) * 60
-        const hill3Y = height * 0.25
-        const dist3 = Math.sqrt(Math.pow(x - hill3X, 2) + Math.pow(baseY - hill3Y, 2))
-        y += Math.exp(-dist3 * dist3 / (2 * 120 * 120)) * 50
-
-        if (x === 0) {
-          ctx.moveTo(x, y)
-        } else {
-          ctx.lineTo(x, y)
-        }
+      ctx.lineWidth = 0.8
+      
+      // Vary line weight for index contours (every 5th line)
+      const isIndexContour = elevation % (contourInterval * 5) === 0
+      if (isIndexContour) {
+        ctx.lineWidth = 1.5
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'
+      } else {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)'
       }
 
-      // Vary opacity and color for depth
-      const alpha = 0.1 + Math.sin(i * 0.3 + time * timeSpeed) * 0.05
-      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`
-      ctx.stroke()
+      drawContourLines(ctx, terrain, width, height, elevation)
     }
-
-    // Add elevation markers on some lines
-    ctx.font = '10px monospace'
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)'
-    
-    for (let i = 0; i < numLines; i += 3) {
-      const baseY = i * lineSpacing
-      const markerX = width * 0.1 + Math.sin(time * timeSpeed + i) * 30
-      let markerY = baseY
-      
-      markerY += Math.sin(markerX * 0.004 + time * timeSpeed * 2 + i * 0.4) * 25
-      markerY += Math.cos(markerX * 0.006 + time * timeSpeed * 1.5 + i * 0.3) * 18
-      
-      const elevation = Math.floor(100 + i * 20)
-      ctx.fillText(`${elevation}m`, markerX, markerY - 5)
-    }
-  }, [])
+  }, [generateTerrain, drawContourLines])
 
   useEffect(() => {
     const canvas = canvasRef.current
