@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface ImageGalleryProps {
   images: string[]
@@ -58,10 +59,12 @@ export default function ImageGallery({ images, vehicleName }: ImageGalleryProps)
           onClick={() => openLightbox(0)}
           className="aspect-video bg-dark-100 rounded-xl overflow-hidden shadow-2xl border border-gray-800 cursor-zoom-in group"
         >
-          <img 
-            src={images[0]} 
-            alt={vehicleName} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+          <Image
+            src={images[0]}
+            alt={vehicleName}
+            fill
+            sizes="(max-width: 768px) 100vw, 70vw"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           />
         </div>
 
@@ -74,10 +77,12 @@ export default function ImageGallery({ images, vehicleName }: ImageGalleryProps)
                 onClick={() => openLightbox(i + 1)}
                 className="aspect-video bg-dark-200 rounded-lg overflow-hidden border border-gray-800 hover:border-primary-500 transition cursor-zoom-in shadow-lg group"
               >
-                <img 
-                  src={img} 
-                  alt={`${vehicleName} ${i + 2}`} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                <Image
+                  src={img}
+                  alt={`${vehicleName} ${i + 2}`}
+                  fill
+                  sizes="(max-width: 768px) 25vw, 12vw"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
             ))}
@@ -106,11 +111,13 @@ export default function ImageGallery({ images, vehicleName }: ImageGalleryProps)
 
           {/* Image Agrandie */}
           <div className="relative max-w-[90vw] max-h-[85vh] flex items-center justify-center select-none" onClick={(e) => e.stopPropagation()}>
-            <img 
+            <Image
               key={currentIndex}
-              src={images[currentIndex]} 
-              alt={`${vehicleName} view`} 
-              className="max-w-full max-h-[85vh] object-contain shadow-2xl rounded-sm"
+              src={images[currentIndex]}
+              alt={`${vehicleName} view`}
+              width={1600}
+              height={900}
+              className="max-w-full max-h-[85vh] w-auto h-auto object-contain shadow-2xl rounded-sm"
             />
             
             {/* Compteur */}

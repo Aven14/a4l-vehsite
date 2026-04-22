@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { query } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,8 +18,19 @@ export async function PUT(
   }
 
   try {
-    const { price, mileage, description, images, isAvailable } =
-      await req.json()
+    const body = await req.json()
+    const schema = z.object({
+      price: z.coerce.number().int().nonnegative().optional(),
+      mileage: z.coerce.number().int().nonnegative().nullable().optional(),
+      description: z.string().trim().max(5000).nullable().optional(),
+      images: z.array(z.string().url()).max(20).nullable().optional(),
+      isAvailable: z.boolean().optional(),
+    }).refine((value) => Object.keys(value).length > 0, { message: 'Aucune donnée à modifier' })
+    const parsed = schema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 })
+    }
+    const { price, mileage, description, images, isAvailable } = parsed.data
 
     // Get user dealership (owner or manager)
     const dealershipResult = await query(

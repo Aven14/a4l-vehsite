@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface Brand {
   id: string
@@ -96,7 +97,7 @@ export default function BrandsPage() {
             <Link href={`/brands/${brand.id}`} key={brand.id} className="card card-hover p-6 text-center">
               <div className="w-20 h-20 mx-auto mb-4 bg-dark-300 rounded-xl flex items-center justify-center">
                 {brand.logo ? (
-                  <img src={brand.logo} alt={brand.name} className="w-12 h-12 object-contain" />
+                  <Image src={brand.logo} alt={brand.name} width={48} height={48} className="w-12 h-12 object-contain" />
                 ) : (
                   <span className="font-display text-3xl font-bold text-primary-400">{brand.name.charAt(0)}</span>
                 )}

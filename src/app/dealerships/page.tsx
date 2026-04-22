@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface Dealership {
   id: string
@@ -58,10 +59,12 @@ export default function DealershipsPage() {
                 className="card card-hover p-6"
               >
                 {dealership.logo && (
-                  <div className="mb-4">
-                    <img
+                  <div className="mb-4 relative h-32 w-full">
+                    <Image
                       src={dealership.logo}
                       alt={dealership.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                       className="w-full h-32 object-contain"
                     />
                   </div>

@@ -2,11 +2,15 @@
 
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 import { SiteLogo } from './SiteLogo'
 
 export function Navbar() {
   const { data: session } = useSession()
+  const pathname = usePathname()
   const user = session?.user as any
+  const navLinkBase = 'nav-interactive px-2 py-1'
+  const activeClass = 'text-primary-400 nav-interactive-active'
 
   return (
     <nav 
@@ -19,7 +23,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 nav-interactive px-2 py-1">
             <SiteLogo />
             <span className="font-display text-xl font-bold text-white tracking-wider hidden sm:block">
               ARMA FOR LIFE
@@ -28,40 +32,40 @@ export function Navbar() {
 
           {/* Navigation */}
           <div className="flex items-center gap-4 sm:gap-6">
-            <Link href="/" className="text-gray-300 hover:text-primary-400 transition font-medium">
+            <Link href="/" aria-current={pathname === '/' ? 'page' : undefined} className={`${navLinkBase} ${pathname === '/' ? activeClass : ''}`}>
               Accueil
             </Link>
-            <Link href="/brands" className="text-gray-300 hover:text-primary-400 transition font-medium hidden sm:block">
+            <Link href="/brands" aria-current={pathname === '/brands' ? 'page' : undefined} className={`${navLinkBase} hidden sm:block ${pathname.startsWith('/brands') ? activeClass : ''}`}>
               Marques
             </Link>
-            <Link href="/vehicles" className="text-gray-300 hover:text-primary-400 transition font-medium">
+            <Link href="/vehicles" aria-current={pathname === '/vehicles' ? 'page' : undefined} className={`${navLinkBase} ${pathname.startsWith('/vehicles') ? activeClass : ''}`}>
               Véhicules
             </Link>
-            <Link href="/dealerships" className="text-gray-300 hover:text-primary-400 transition font-medium hidden sm:block">
+            <Link href="/dealerships" aria-current={pathname === '/dealerships' ? 'page' : undefined} className={`${navLinkBase} hidden sm:block ${pathname.startsWith('/dealerships') ? activeClass : ''}`}>
               Concessionnaires
             </Link>
-            <a href="https://discord.gg/KeXpbkCwvm" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 transition font-medium">
+            <a href="https://discord.gg/KeXpbkCwvm" target="_blank" rel="noopener noreferrer" className={`${navLinkBase} text-indigo-400 hover:text-indigo-300`}>
               Discord
             </a>
 
             {session ? (
               <div className="flex items-center gap-3">
                 {user?.dealership && (
-                  <Link href="/dealership" className="text-primary-400 hover:text-primary-300 transition font-medium">
+                  <Link href="/dealership" className={`${navLinkBase} text-primary-400 hover:text-primary-300`}>
                     Concess
                   </Link>
                 )}
                 {user?.canAccessAdmin && (
-                  <Link href="/admin" className="text-primary-400 hover:text-primary-300 transition font-medium">
+                  <Link href="/admin" className={`${navLinkBase} text-primary-400 hover:text-primary-300`}>
                     Panel
                   </Link>
                 )}
-                <Link href="/account" className="text-blue-400 hover:text-blue-300 transition font-medium">
+                <Link href="/account" className={`${navLinkBase} text-blue-400 hover:text-blue-300`}>
                   Compte
                 </Link>
                 <button
                   onClick={() => signOut({ callbackUrl: '/' })}
-                  className="text-red-400 hover:text-red-300 transition font-medium text-sm"
+                  className="nav-interactive px-2 py-1 text-red-400 hover:text-red-300 font-medium text-sm"
                 >
                   Déco
                 </button>

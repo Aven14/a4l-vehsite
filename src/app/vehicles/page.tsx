@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface Vehicle {
   id: string
@@ -13,6 +14,9 @@ interface Vehicle {
   seats: number | null
   images: string
   brand: { id: string; name: string }
+}
+interface VehicleCardData extends Vehicle {
+  imageList: string[]
 }
 
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'power-desc' | 'power-asc' | 'vmax-desc' | 'vmax-asc' | 'trunk-desc' | 'trunk-asc' | 'seats-desc' | 'seats-asc'
@@ -32,8 +36,19 @@ export default function VehiclesPage() {
       })
   }, [])
 
+  const normalizedVehicles = useMemo<VehicleCardData[]>(() => {
+    return vehicles.map((vehicle) => {
+      try {
+        const parsed = JSON.parse(vehicle.images || '[]')
+        return { ...vehicle, imageList: Array.isArray(parsed) ? parsed : [] }
+      } catch {
+        return { ...vehicle, imageList: [] }
+      }
+    })
+  }, [vehicles])
+
   const filteredAndSortedVehicles = useMemo(() => {
-    let filtered = vehicles
+    let filtered = normalizedVehicles
     
     // Filtrer par recherche
     if (search.trim()) {
@@ -86,7 +101,7 @@ export default function VehiclesPage() {
     }
     
     return sorted
-  }, [vehicles, search, sortBy])
+  }, [normalizedVehicles, search, sortBy])
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-gray-500">Chargement...</div>
@@ -141,12 +156,11 @@ export default function VehiclesPage() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredAndSortedVehicles.map(vehicle => {
-            const images = JSON.parse(vehicle.images || '[]')
             return (
               <Link href={`/vehicles/${vehicle.id}`} key={vehicle.id} className="card card-hover overflow-hidden group">
                 <div className="aspect-video bg-dark-300 relative overflow-hidden">
-                  {images[0] ? (
-                    <img src={images[0]} alt={vehicle.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  {vehicle.imageList[0] ? (
+                    <Image src={vehicle.imageList[0]} alt={vehicle.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-600">
                       <span className="text-4xl">🚗</span>

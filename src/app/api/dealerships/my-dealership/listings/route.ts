@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { query } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
 
@@ -89,11 +90,19 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { vehicleId, price, mileage, description, images } = await req.json()
-
-    if (!vehicleId || price === undefined) {
-      return NextResponse.json({ error: 'Données manquantes' }, { status: 400 })
+    const body = await req.json()
+    const schema = z.object({
+      vehicleId: z.string().trim().min(1),
+      price: z.coerce.number().int().nonnegative(),
+      mileage: z.coerce.number().int().nonnegative().nullable().optional(),
+      description: z.string().trim().max(5000).nullable().optional(),
+      images: z.array(z.string().url()).max(20).optional(),
+    })
+    const parsed = schema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 })
     }
+    const { vehicleId, price, mileage, description, images } = parsed.data
 
     // Récupérer l'utilisateur avec son appartenance à un concessionnaire
     const userWithDealership = await prisma.user.findUnique({

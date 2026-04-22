@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { makeUniqueId, toSlug } from '@/lib/slug'
+import { requirePermission } from '@/lib/api-auth'
+import { z } from 'zod'
 
 // Force dynamic pour éviter les problèmes au build
 export const dynamic = 'force-dynamic'
@@ -49,7 +49,9 @@ export async function GET(req: NextRequest) {
       }
     }))
 
-    return NextResponse.json(vehicles)
+    const response = NextResponse.json(vehicles)
+    response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=600')
+    return response
   } catch (error) {
     console.error('Erreur GET /api/vehicles:', error)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
@@ -58,16 +60,29 @@ export async function GET(req: NextRequest) {
 
 // POST - Créer un véhicule (admin)
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  const auth = await requirePermission('canEditVehicles')
+  if ('error' in auth) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
   }
 
-  const { name, description, price, images, brandId, category, power, trunk, vmax, seats } = await req.json()
-
-  if (!name || !price || !brandId) {
-    return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 })
+  const body = await req.json()
+  const schema = z.object({
+    name: z.string().trim().min(1),
+    description: z.string().trim().max(5000).nullable().optional(),
+    price: z.coerce.number().int().nonnegative(),
+    images: z.array(z.string().url()).max(20).optional(),
+    brandId: z.string().trim().min(1),
+    category: z.string().trim().max(120).nullable().optional(),
+    power: z.coerce.number().int().nonnegative().nullable().optional(),
+    trunk: z.coerce.number().int().nonnegative().nullable().optional(),
+    vmax: z.coerce.number().int().nonnegative().nullable().optional(),
+    seats: z.coerce.number().int().nonnegative().nullable().optional(),
+  })
+  const parsed = schema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 })
   }
+  const { name, description, price, images, brandId, category, power, trunk, vmax, seats } = parsed.data
 
   const brand = await prisma.brand.findUnique({ where: { id: brandId } })
   if (!brand) {
@@ -84,21 +99,25 @@ export async function POST(req: NextRequest) {
     `vehicle-${toSlug(brand.name) || 'brand'}`
   )
 
-  const vehicle = await prisma.vehicle.create({
-    data: {
-      id,
-      name,
-      description,
-      price,
-      power,
-      trunk,
-      vmax,
-      seats,
-      images: JSON.stringify(images || []),
-      brandId,
-      category,
-    },
-  })
-
-  return NextResponse.json(vehicle, { status: 201 })
+  try {
+    const vehicle = await prisma.vehicle.create({
+      data: {
+        id,
+        name,
+        description: description ?? null,
+        price,
+        power: power ?? null,
+        trunk: trunk ?? null,
+        vmax: vmax ?? null,
+        seats: seats ?? null,
+        images: JSON.stringify(images || []),
+        brandId,
+        category: category ?? null,
+      },
+    })
+    return NextResponse.json(vehicle, { status: 201 })
+  } catch (error) {
+    console.error('Erreur POST /api/vehicles:', error)
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+  }
 }

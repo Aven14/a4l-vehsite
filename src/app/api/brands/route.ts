@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { makeUniqueId } from '@/lib/slug'
+import { requirePermission } from '@/lib/api-auth'
+import { z } from 'zod'
 
 // Force dynamic pour éviter les problèmes au build
 export const dynamic = 'force-dynamic'
@@ -20,7 +20,9 @@ export async function GET() {
       orderBy: { name: 'asc' }
     })
     
-    return NextResponse.json(brands)
+    const response = NextResponse.json(brands)
+    response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=1800')
+    return response
   } catch (error) {
     console.error('Erreur GET /api/brands:', error)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
@@ -29,16 +31,23 @@ export async function GET() {
 
 // POST - Créer une marque (admin)
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  const auth = await requirePermission('canEditBrands')
+  if ('error' in auth) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
   }
 
-  const { name, logo, dealershipName, dealershipLocation } = await req.json()
-  
-  if (!name) {
-    return NextResponse.json({ error: 'Nom requis' }, { status: 400 })
+  const body = await req.json()
+  const schema = z.object({
+    name: z.string().trim().min(1),
+    logo: z.string().url().nullable().optional(),
+    dealershipName: z.string().trim().max(120).nullable().optional(),
+    dealershipLocation: z.string().trim().max(120).nullable().optional(),
+  })
+  const parsed = schema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 })
   }
+  const { name, logo, dealershipName, dealershipLocation } = parsed.data
 
   const id = await makeUniqueId(
     name,
@@ -53,10 +62,8 @@ export async function POST(req: NextRequest) {
     data: { 
       id,
       name, 
-      logo,
-      // @ts-ignore
+      logo: logo ?? null,
       dealershipName: dealershipName || 'Concessionnaire',
-      // @ts-ignore
       dealershipLocation: dealershipLocation || 'Inconnu'
     },
   })

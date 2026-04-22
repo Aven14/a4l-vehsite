@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requirePermission } from '@/lib/api-auth'
+import { z } from 'zod'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,40 +49,73 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 // PUT - Modifier un véhicule (admin)
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  const auth = await requirePermission('canEditVehicles')
+  if ('error' in auth) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
   }
 
-  const { name, description, price, images, brandId, category, power, trunk, vmax, seats } = await req.json()
+  const body = await req.json()
+  const schema = z.object({
+    name: z.string().trim().min(1).optional(),
+    description: z.string().trim().max(5000).nullable().optional(),
+    price: z.coerce.number().int().nonnegative().optional(),
+    images: z.array(z.string().url()).max(20).optional(),
+    brandId: z.string().trim().min(1).optional(),
+    category: z.string().trim().max(120).nullable().optional(),
+    power: z.coerce.number().int().nonnegative().nullable().optional(),
+    trunk: z.coerce.number().int().nonnegative().nullable().optional(),
+    vmax: z.coerce.number().int().nonnegative().nullable().optional(),
+    seats: z.coerce.number().int().nonnegative().nullable().optional(),
+  }).refine((value) => Object.keys(value).length > 0, { message: 'Aucune donnée à modifier' })
+  const parsed = schema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Données invalides', details: parsed.error.flatten() }, { status: 400 })
+  }
+  const { name, description, price, images, brandId, category, power, trunk, vmax, seats } = parsed.data
 
-  const vehicle = await prisma.vehicle.update({
-    where: { id: params.id },
-    data: {
-      name,
-      description,
-      price,
-      power,
-      trunk,
-      vmax,
-      seats,
-      images: images ? JSON.stringify(images) : undefined,
-      brandId,
-      category,
-    },
-  })
-
-  return NextResponse.json(vehicle)
+  try {
+    const vehicle = await prisma.vehicle.update({
+      where: { id: params.id },
+      data: {
+        name,
+        description,
+        price,
+        power,
+        trunk,
+        vmax,
+        seats,
+        images: images ? JSON.stringify(images) : undefined,
+        brandId,
+        category,
+      },
+    })
+    return NextResponse.json(vehicle)
+  } catch (error) {
+    const prismaError = error as { code?: string }
+    if (prismaError.code === 'P2025') {
+      return NextResponse.json({ error: 'Véhicule non trouvé' }, { status: 404 })
+    }
+    console.error('Vehicle PUT error:', error)
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+  }
 }
 
 // DELETE - Supprimer un véhicule (admin)
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  const auth = await requirePermission('canDeleteVehicles')
+  if ('error' in auth) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
   }
 
-  await prisma.vehicle.delete({ where: { id: params.id } })
-
-  return NextResponse.json({ success: true })
+  try {
+    await prisma.vehicle.delete({ where: { id: params.id } })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    const prismaError = error as { code?: string }
+    if (prismaError.code === 'P2025') {
+      return NextResponse.json({ error: 'Véhicule non trouvé' }, { status: 404 })
+    }
+    console.error('Vehicle DELETE error:', error)
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+  }
 }

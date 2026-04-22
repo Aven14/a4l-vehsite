@@ -1,14 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
+import { getSiteSettingsClient } from '@/lib/site-settings-client'
 
 export function SiteLogo() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/site-settings')
-      .then(res => res.json())
+    getSiteSettingsClient()
       .then(data => {
         if (data.siteLogo) {
           setLogoUrl(data.siteLogo)
@@ -31,9 +32,11 @@ export function SiteLogo() {
 
   if (logoUrl) {
     return (
-      <img
+      <Image
         src={logoUrl}
         alt="A4L Logo"
+        width={40}
+        height={40}
         className="w-10 h-10 object-contain"
         onError={() => setLogoUrl(null)}
       />

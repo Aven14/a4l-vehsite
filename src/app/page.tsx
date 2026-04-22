@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import Image from 'next/image'
 
 // Force dynamic rendering to avoid connection pool issues during build
 export const dynamic = 'force-dynamic'
@@ -33,7 +34,7 @@ export default async function HomePage() {
         <div 
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(to bottom, rgba(var(--accent-color-rgb, 168, 85, 247), 0.05), transparent)'
+            background: 'linear-gradient(to bottom, rgba(var(--accent-color-rgb, 17, 134, 208), 0.05), transparent)'
           }}
         />
         <div className="max-w-7xl mx-auto text-center relative z-10">
@@ -62,7 +63,7 @@ export default async function HomePage() {
       <section 
         className="py-12"
         style={{
-          borderColor: `rgba(var(--accent-color-rgb, 168, 85, 247), 0.05)`,
+          borderColor: `rgba(var(--accent-color-rgb, 17, 134, 208), 0.05)`,
           borderTopWidth: '1px',
           borderBottomWidth: '1px'
         }}
@@ -103,7 +104,7 @@ export default async function HomePage() {
               >
                 <div className="w-16 h-16 mx-auto mb-4 bg-dark-300 rounded-full flex items-center justify-center">
                   {brand.logo ? (
-                    <img src={brand.logo} alt={brand.name} className="w-12 h-12 object-contain" />
+                    <Image src={brand.logo} alt={brand.name} width={48} height={48} className="w-12 h-12 object-contain" />
                   ) : (
                     <span className="font-display text-2xl font-bold text-primary-400">
                       {brand.name.charAt(0)}
@@ -122,7 +123,7 @@ export default async function HomePage() {
       <footer 
         className="py-8 text-center text-gray-500"
         style={{
-          borderColor: `rgba(var(--accent-color-rgb, 168, 85, 247), 0.05)`,
+          borderColor: `rgba(var(--accent-color-rgb, 17, 134, 208), 0.05)`,
           borderTopWidth: '1px'
         }}
       >

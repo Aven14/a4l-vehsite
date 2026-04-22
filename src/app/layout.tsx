@@ -4,6 +4,18 @@ import { Providers } from '@/components/Providers'
 import { Navbar } from '@/components/Navbar'
 import { Favicon } from '@/components/Favicon'
 import AnalyticsTracker from '@/components/AnalyticsTracker'
+import { Orbitron, Rajdhani } from 'next/font/google'
+
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  variable: '--font-display',
+})
+
+const rajdhani = Rajdhani({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-body',
+})
 
 export const metadata: Metadata = {
   title: 'Catalogue Véhicule A4L - Liste non-officielle',
@@ -16,11 +28,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="fr">
+    <html lang="fr" className={`${orbitron.variable} ${rajdhani.variable}`}>
       <head>
         <Favicon />
       </head>
-      <body className="min-h-screen bg-dark-400 military-grid">
+      <body className="min-h-screen bg-dark-400 military-grid font-body">
         <Providers>
           <AnalyticsTracker />
           <Navbar />

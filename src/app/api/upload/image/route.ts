@@ -8,6 +8,7 @@ import {
 } from "@/lib/cloudinary";
 
 export const dynamic = "force-dynamic";
+const ALLOWED_UPLOAD_FOLDERS = new Set(["vehicles", "brands", "dealerships", "site"]);
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,8 +47,11 @@ export async function POST(req: NextRequest) {
     const sourceBuffer = Buffer.from(arrayBuffer);
     const webpBuffer = await optimizeToWebp(sourceBuffer);
 
+    const requestedFolder = typeof folder === "string" ? folder.trim() : "";
+    const safeFolder = ALLOWED_UPLOAD_FOLDERS.has(requestedFolder) ? requestedFolder : "vehicles";
+
     const uploadResult = await uploadImageBufferToCloudinary(webpBuffer, {
-      folder: typeof folder === "string" && folder.trim() ? folder : "vehicles",
+      folder: safeFolder,
     });
 
     const optimizedUrl = buildOptimizedImageUrl(uploadResult.publicId);
