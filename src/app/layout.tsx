@@ -4,6 +4,7 @@ import { Providers } from '@/components/Providers'
 import { Navbar } from '@/components/Navbar'
 import { Favicon } from '@/components/Favicon'
 import AnalyticsTracker from '@/components/AnalyticsTracker'
+import { InteractiveBackground } from '@/components/InteractiveBackground'
 import { Orbitron, Rajdhani } from 'next/font/google'
 
 const orbitron = Orbitron({
@@ -33,10 +34,11 @@ export default function RootLayout({
         <Favicon />
       </head>
       <body className="min-h-screen bg-dark-400 military-grid font-body">
+        <InteractiveBackground />
         <Providers>
           <AnalyticsTracker />
           <Navbar />
-          <main>{children}</main>
+          <main className="relative z-10">{children}</main>
         </Providers>
       </body>
     </html>

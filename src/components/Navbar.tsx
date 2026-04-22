@@ -9,12 +9,12 @@ export function Navbar() {
   const { data: session } = useSession()
   const pathname = usePathname()
   const user = session?.user as any
-  const navLinkBase = 'nav-interactive px-2 py-1'
+  const navLinkBase = 'nav-interactive px-2 py-1 relative'
   const activeClass = 'text-primary-400 nav-interactive-active'
 
   return (
     <nav 
-      className="bg-dark-200/80 backdrop-blur-md sticky top-0 z-50"
+      className="bg-dark-200/80 backdrop-blur-md sticky top-0 z-50 transition-all duration-300"
       style={{
         borderColor: `rgba(var(--accent-color-rgb, 168, 85, 247), 0.1)`,
         borderBottomWidth: '1px'
@@ -23,9 +23,11 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 nav-interactive px-2 py-1">
-            <SiteLogo />
-            <span className="font-display text-xl font-bold text-white tracking-wider hidden sm:block">
+          <Link href="/" className="flex items-center gap-3 nav-interactive px-2 py-1 group">
+            <div className="transition-transform duration-300 group-hover:scale-110">
+              <SiteLogo />
+            </div>
+            <span className="font-display text-xl font-bold text-white tracking-wider hidden sm:block transition-all duration-300 group-hover:text-primary-400">
               ARMA FOR LIFE
             </span>
           </Link>
@@ -34,18 +36,23 @@ export function Navbar() {
           <div className="flex items-center gap-4 sm:gap-6">
             <Link href="/" aria-current={pathname === '/' ? 'page' : undefined} className={`${navLinkBase} ${pathname === '/' ? activeClass : ''}`}>
               Accueil
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-400 transition-all duration-300 group-hover:w-full" />
             </Link>
-            <Link href="/brands" aria-current={pathname === '/brands' ? 'page' : undefined} className={`${navLinkBase} hidden sm:block ${pathname.startsWith('/brands') ? activeClass : ''}`}>
+            <Link href="/brands" aria-current={pathname === '/brands' ? 'page' : undefined} className={`${navLinkBase} hidden sm:block ${pathname.startsWith('/brands') ? activeClass : ''} group`}>
               Marques
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-400 transition-all duration-300 group-hover:w-full" />
             </Link>
-            <Link href="/vehicles" aria-current={pathname === '/vehicles' ? 'page' : undefined} className={`${navLinkBase} ${pathname.startsWith('/vehicles') ? activeClass : ''}`}>
+            <Link href="/vehicles" aria-current={pathname === '/vehicles' ? 'page' : undefined} className={`${navLinkBase} group ${pathname.startsWith('/vehicles') ? activeClass : ''}`}>
               Véhicules
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-400 transition-all duration-300 group-hover:w-full" />
             </Link>
-            <Link href="/dealerships" aria-current={pathname === '/dealerships' ? 'page' : undefined} className={`${navLinkBase} hidden sm:block ${pathname.startsWith('/dealerships') ? activeClass : ''}`}>
+            <Link href="/dealerships" aria-current={pathname === '/dealerships' ? 'page' : undefined} className={`${navLinkBase} hidden sm:block ${pathname.startsWith('/dealerships') ? activeClass : ''} group`}>
               Concessionnaires
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-400 transition-all duration-300 group-hover:w-full" />
             </Link>
-            <a href="https://discord.gg/KeXpbkCwvm" target="_blank" rel="noopener noreferrer" className={`${navLinkBase} text-indigo-400 hover:text-indigo-300`}>
+            <a href="https://discord.gg/KeXpbkCwvm" target="_blank" rel="noopener noreferrer" className={`${navLinkBase} text-indigo-400 hover:text-indigo-300 group`}>
               Discord
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-indigo-400 transition-all duration-300 group-hover:w-full" />
             </a>
 
             {session ? (

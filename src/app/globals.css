@@ -59,6 +59,77 @@ body {
   animation: fadeIn 0.5s ease-out forwards;
 }
 
+/* Page transitions */
+.page-transition {
+  animation: pageFadeIn 0.3s ease-out;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Button pulse animation */
+@keyframes buttonPulse {
+  0%, 100% {
+    box-shadow: 0 10px 15px -3px rgba(var(--accent-color-rgb, 17, 134, 208), 0.2);
+  }
+  50% {
+    box-shadow: 0 10px 25px -3px rgba(var(--accent-color-rgb, 17, 134, 208), 0.4);
+  }
+}
+
+.btn-primary {
+  background: linear-gradient(to right, var(--accent-color-600), var(--accent-color-500));
+  @apply text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg;
+  box-shadow: 0 10px 15px -3px rgba(var(--accent-color-rgb, 17, 134, 208), 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(to right, var(--accent-color-500), var(--accent-color-400));
+  box-shadow: 0 10px 25px -3px rgba(var(--accent-color-rgb, 17, 134, 208), 0.5);
+  transform: translateY(-2px) scale(1.02);
+  animation: buttonPulse 1.5s ease-in-out infinite;
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
 /* Effet de grille militaire */
 .military-grid {
   background-image: 
@@ -83,38 +154,87 @@ body {
   @apply bg-dark-100 border font-semibold py-3 px-6 rounded-lg transition-all duration-300;
   border-color: rgba(var(--accent-color-rgb, 17, 134, 208), 0.3);
   color: var(--accent-color-400);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-secondary::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(var(--accent-color-rgb, 17, 134, 208), 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-secondary:hover::before {
+  width: 300px;
+  height: 300px;
 }
 
 .btn-secondary:hover {
   background: rgba(var(--accent-color-rgb, 17, 134, 208), 0.1);
   border-color: rgba(var(--accent-color-rgb, 17, 134, 208), 0.5);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 20px -5px rgba(var(--accent-color-rgb, 17, 134, 208), 0.3);
+}
+
+.btn-secondary:active {
+  transform: translateY(0) scale(0.98);
 }
 
 /* Cards */
 .card {
   @apply bg-dark-100 border border-gray-800 rounded-xl overflow-hidden transition-all duration-300;
+  position: relative;
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(var(--accent-color-rgb, 17, 134, 208), 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.card:hover::after {
+  opacity: 1;
 }
 
 .card:hover {
-  border-color: rgba(var(--accent-color-rgb, 17, 134, 208), 0.3);
+  border-color: rgba(var(--accent-color-rgb, 17, 134, 208), 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 30px -10px rgba(var(--accent-color-rgb, 17, 134, 208), 0.2);
 }
 
 .card-hover {
   @apply hover:transform hover:scale-[1.02];
+  transition: transform 0.3s ease-out;
 }
 
 .card-hover:hover {
-  box-shadow: 0 20px 25px -5px rgba(var(--accent-color-rgb, 17, 134, 208), 0.1);
+  box-shadow: 0 25px 35px -5px rgba(var(--accent-color-rgb, 17, 134, 208), 0.25);
 }
 
 .nav-interactive {
   @apply font-medium text-gray-300 rounded-md;
-  @apply transition-[color,transform,background-color,box-shadow] duration-200 ease-out;
+  @apply transition-[color,background-color,box-shadow] duration-200 ease-out;
+  will-change: transform;
+  position: relative;
+  padding-bottom: 2px;
 }
 
 .nav-interactive:hover {
   color: var(--accent-color-400);
-  transform: scale(1.04);
   background: rgba(var(--accent-color-rgb, 17, 134, 208), 0.08);
 }
 
@@ -129,4 +249,70 @@ body {
 
 .nav-interactive-active {
   background: rgba(var(--accent-color-rgb, 17, 134, 208), 0.15);
+}
+
+/* Staggered animation for list items */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideInUp {
+  animation: slideInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* Floating animation for hero elements */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Glow effect */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(var(--accent-color-rgb, 17, 134, 208), 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(var(--accent-color-rgb, 17, 134, 208), 0.8), 0 0 30px rgba(var(--accent-color-rgb, 17, 134, 208), 0.6);
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Shimmer effect for loading states */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
 }

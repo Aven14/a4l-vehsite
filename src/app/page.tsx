@@ -38,14 +38,14 @@ export default async function HomePage() {
           }}
         />
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="font-display text-5xl md:text-7xl font-bold text-white mb-6 tracking-wider">
+          <h1 className="font-display text-5xl md:text-7xl font-bold text-white mb-6 tracking-wider animate-float">
             VÉHICULES <span className="text-primary-400">A4L</span>
           </h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-8">
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-8 animate-slideInUp" style={{ animationDelay: '0.2s' }}>
             Liste non-officielle des véhicules du serveur Arma For Life.
             Retrouvez tous les véhicules disponibles avec leurs caractéristiques.
           </p>
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-wrap gap-4 justify-center animate-slideInUp" style={{ animationDelay: '0.4s' }}>
             <Link href="/vehicles" className="btn-primary">
               Voir les véhicules
             </Link>
@@ -61,26 +61,27 @@ export default async function HomePage() {
 
       {/* Stats */}
       <section 
-        className="py-12"
+        className="py-12 animate-slideInUp"
         style={{
           borderColor: `rgba(var(--accent-color-rgb, 17, 134, 208), 0.05)`,
           borderTopWidth: '1px',
-          borderBottomWidth: '1px'
+          borderBottomWidth: '1px',
+          animationDelay: '0.3s'
         }}
       >
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-3 gap-8 text-center">
-            <div>
+            <div className="animate-slideInUp" style={{ animationDelay: '0.4s' }}>
               <div className="font-display text-4xl font-bold text-primary-400">{brands.length}</div>
               <div className="text-gray-500 mt-1">Marques</div>
             </div>
-            <div>
+            <div className="animate-slideInUp" style={{ animationDelay: '0.5s' }}>
               <div className="font-display text-4xl font-bold text-primary-400">
                 {totalVehicles}
               </div>
               <div className="text-gray-500 mt-1">Véhicules</div>
             </div>
-            <div>
+            <div className="animate-slideInUp" style={{ animationDelay: '0.6s' }}>
               <div className="font-display text-4xl font-bold text-primary-400">24/7</div>
               <div className="text-gray-500 mt-1">Disponible</div>
             </div>
@@ -91,7 +92,7 @@ export default async function HomePage() {
       {/* Marques */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <h2 className="font-display text-3xl font-bold text-white mb-12 text-center">
+          <h2 className="font-display text-3xl font-bold text-white mb-12 text-center animate-slideInUp">
             NOS <span className="text-primary-400">MARQUES</span>
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
@@ -99,10 +100,10 @@ export default async function HomePage() {
               <Link
                 key={brand.id}
                 href={`/brands/${brand.id}`}
-                className="card card-hover p-6 text-center animate-fadeIn"
-                style={{ animationDelay: `${i * 100}ms` }}
+                className="card card-hover p-6 text-center animate-slideInUp"
+                style={{ animationDelay: `${(i + 1) * 0.1}s` }}
               >
-                <div className="w-16 h-16 mx-auto mb-4 bg-dark-300 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-dark-300 rounded-full flex items-center justify-center group-hover:animate-glow">
                   {brand.logo ? (
                     <Image src={brand.logo} alt={brand.name} width={48} height={48} className="w-12 h-12 object-contain" />
                   ) : (
