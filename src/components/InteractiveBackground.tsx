@@ -14,96 +14,44 @@ export function InteractiveBackground() {
     ctx.fillStyle = '#0a0a0a'
     ctx.fillRect(0, 0, width, height)
 
-    const timeSpeed = 0.0004
+    const timeSpeed = 0.0003
+    const numLines = 25
+    const lineSpacing = height / (numLines - 1)
 
-    // Define moving terrain peaks
-    const peaks = [
-      { x: width * 0.2, y: height * 0.3, moveRadius: 60, speed: timeSpeed },
-      { x: width * 0.7, y: height * 0.6, moveRadius: 80, speed: timeSpeed * 1.2 },
-      { x: width * 0.5, y: height * 0.8, moveRadius: 50, speed: timeSpeed * 0.8 },
-      { x: width * 0.85, y: height * 0.2, moveRadius: 70, speed: timeSpeed * 1.1 },
-      { x: width * 0.3, y: height * 0.7, moveRadius: 65, speed: timeSpeed * 0.9 },
-    ]
+    // Draw main topographic contour lines
+    ctx.lineWidth = 1
 
-    // Draw radial contour lines around each peak (classic topographic look)
-    for (const peak of peaks) {
-      const peakX = peak.x + Math.sin(time * peak.speed * 2) * peak.moveRadius
-      const peakY = peak.y + Math.cos(time * peak.speed * 1.5) * peak.moveRadius
-      const numRings = 15
-      const maxRadius = 200
+    for (let i = 0; i < numLines; i++) {
+      const baseY = i * lineSpacing
 
-      for (let ring = 1; ring <= numRings; ring++) {
-        const baseRadius = ring * (maxRadius / numRings)
-        
-        ctx.beginPath()
-        ctx.lineWidth = 1.2
-        
-        for (let angle = 0; angle <= Math.PI * 2; angle += 0.05) {
-          // Organic distortion for natural look
-          const distortion = 
-            Math.sin(angle * 4 + time * timeSpeed * 3 + ring * 0.3) * 18 +
-            Math.cos(angle * 6 + time * timeSpeed * 2 + ring * 0.2) * 12 +
-            Math.sin(angle * 3 + time * timeSpeed * 4) * 15 +
-            Math.cos(angle * 5 + time * timeSpeed * 2.5) * 10
-
-          const radius = baseRadius + distortion
-          const x = peakX + Math.cos(angle) * radius
-          const y = peakY + Math.sin(angle) * radius
-
-          if (angle === 0) {
-            ctx.moveTo(x, y)
-          } else {
-            ctx.lineTo(x, y)
-          }
-        }
-
-        ctx.closePath()
-        
-        // Lines get lighter as they go out
-        const alpha = 0.2 - (ring / numRings) * 0.12
-        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`
-        ctx.stroke()
-      }
-
-      // Add small peak marker
       ctx.beginPath()
-      ctx.arc(peakX, peakY, 2, 0, Math.PI * 2)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'
-      ctx.fill()
-    }
 
-    // Add flowing contour lines that weave between peaks
-    ctx.lineWidth = 0.8
-    const numFlowLines = 12
-    
-    for (let i = 0; i < numFlowLines; i++) {
-      const baseY = (i / numFlowLines) * height
-      
-      ctx.beginPath()
-      
-      for (let x = 0; x <= width; x += 4) {
+      for (let x = 0; x <= width; x += 3) {
+        // Create topographic wave patterns - lines going left to right with curves
         let y = baseY
-        
-        // Influence from peaks
-        for (const peak of peaks) {
-          const peakX = peak.x + Math.sin(time * peak.speed * 2) * peak.moveRadius
-          const peakY = peak.y + Math.cos(time * peak.speed * 1.5) * peak.moveRadius
-          
-          const dx = x - peakX
-          const dy = baseY - peakY
-          const distance = Math.sqrt(dx * dx + dy * dy)
-          
-          // Push lines away from peaks
-          const influence = Math.exp(-(distance * distance) / (2 * 200 * 200)) * 50
-          y -= influence
-        }
-        
-        // Add wave motion
-        y += Math.sin(x * 0.005 + time * timeSpeed * 2 + i * 0.5) * 20
-        y += Math.cos(x * 0.003 + time * timeSpeed * 1.5) * 15
 
-        const alpha = 0.12 + Math.sin(x * 0.01 + time * timeSpeed) * 0.03
-        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`
+        // Multiple overlapping waves for organic topographic feel
+        y += Math.sin(x * 0.004 + time * timeSpeed * 2 + i * 0.4) * 25
+        y += Math.cos(x * 0.006 + time * timeSpeed * 1.5 + i * 0.3) * 18
+        y += Math.sin(x * 0.003 + time * timeSpeed + i * 0.2) * 30
+        y += Math.cos(x * 0.008 + time * timeSpeed * 2.5 + i * 0.5) * 12
+        y += Math.sin(x * 0.002 + time * timeSpeed * 0.5 + i * 0.6) * 35
+
+        // Add some hill/mountain bumps
+        const hill1X = width * 0.3 + Math.sin(time * timeSpeed * 1.5) * 80
+        const hill1Y = height * 0.4
+        const dist1 = Math.sqrt(Math.pow(x - hill1X, 2) + Math.pow(baseY - hill1Y, 2))
+        y += Math.exp(-dist1 * dist1 / (2 * 150 * 150)) * 60
+
+        const hill2X = width * 0.7 + Math.cos(time * timeSpeed * 1.2) * 100
+        const hill2Y = height * 0.7
+        const dist2 = Math.sqrt(Math.pow(x - hill2X, 2) + Math.pow(baseY - hill2Y, 2))
+        y += Math.exp(-dist2 * dist2 / (2 * 180 * 180)) * 70
+
+        const hill3X = width * 0.5 + Math.sin(time * timeSpeed * 1.8) * 60
+        const hill3Y = height * 0.25
+        const dist3 = Math.sqrt(Math.pow(x - hill3X, 2) + Math.pow(baseY - hill3Y, 2))
+        y += Math.exp(-dist3 * dist3 / (2 * 120 * 120)) * 50
 
         if (x === 0) {
           ctx.moveTo(x, y)
@@ -111,8 +59,27 @@ export function InteractiveBackground() {
           ctx.lineTo(x, y)
         }
       }
-      
+
+      // Vary opacity and color for depth
+      const alpha = 0.1 + Math.sin(i * 0.3 + time * timeSpeed) * 0.05
+      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`
       ctx.stroke()
+    }
+
+    // Add elevation markers on some lines
+    ctx.font = '10px monospace'
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)'
+    
+    for (let i = 0; i < numLines; i += 3) {
+      const baseY = i * lineSpacing
+      const markerX = width * 0.1 + Math.sin(time * timeSpeed + i) * 30
+      let markerY = baseY
+      
+      markerY += Math.sin(markerX * 0.004 + time * timeSpeed * 2 + i * 0.4) * 25
+      markerY += Math.cos(markerX * 0.006 + time * timeSpeed * 1.5 + i * 0.3) * 18
+      
+      const elevation = Math.floor(100 + i * 20)
+      ctx.fillText(`${elevation}m`, markerX, markerY - 5)
     }
   }, [])
 
