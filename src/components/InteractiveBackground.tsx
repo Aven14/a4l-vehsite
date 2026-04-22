@@ -13,48 +13,76 @@ export function InteractiveBackground() {
   const animationFrameId = useRef<number>()
   const timeRef = useRef<number>(0)
 
-  const drawWave = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number, time: number) => {
+  const drawAnimatedGrid = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number, time: number) => {
     ctx.clearRect(0, 0, width, height)
 
     const accentRgb = '17, 134, 208'
+    const gridSize = 50
+    const waveAmplitude = 8
+    const waveSpeed = 0.001
+    const waveFrequency = 0.02
 
-    // Draw multiple wave layers
-    for (let layer = 0; layer < 3; layer++) {
-      ctx.beginPath()
+    // Calculate wave offset for each grid line
+    const drawWaveGrid = () => {
+      ctx.strokeStyle = `rgba(${accentRgb}, 0.04)`
+      ctx.lineWidth = 1
 
-      const amplitude = 40 + layer * 20
-      const frequency = 0.001 + layer * 0.0005
-      const speed = 0.0003 + layer * 0.0001
-      const yOffset = height * 0.5 + layer * 50
+      // Draw vertical lines with wave effect
+      for (let x = 0; x <= width; x += gridSize) {
+        ctx.beginPath()
+        
+        for (let y = 0; y <= height; y += 5) {
+          // Calculate wave offset based on position and time
+          const dx = x - mousePosition.current.x
+          const dy = y - mousePosition.current.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+          const mouseInfluence = Math.max(0, 1 - distance / 400)
 
-      for (let x = 0; x <= width; x += 10) {
-        // Calculate distance from mouse for interactive effect
-        const dx = x - mousePosition.current.x
-        const dy = yOffset - mousePosition.current.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-        const mouseInfluence = Math.max(0, 1 - distance / 500)
+          const waveOffset = Math.sin(y * waveFrequency + time * waveSpeed) * waveAmplitude * (1 + mouseInfluence * 0.5) +
+                            Math.cos(y * waveFrequency * 0.5 + time * waveSpeed * 0.7) * waveAmplitude * 0.5
 
-        const y = yOffset +
-          Math.sin(x * frequency + time * speed + layer) * amplitude * (1 + mouseInfluence * 0.3) +
-          Math.cos(x * frequency * 2 + time * speed * 1.5) * amplitude * 0.5
+          const adjustedX = x + waveOffset
 
-        if (x === 0) {
-          ctx.moveTo(x, y)
-        } else {
-          ctx.lineTo(x, y)
+          if (y === 0) {
+            ctx.moveTo(adjustedX, y)
+          } else {
+            ctx.lineTo(adjustedX, y)
+          }
         }
+        
+        ctx.stroke()
       }
 
-      ctx.lineTo(width, height)
-      ctx.lineTo(0, height)
-      ctx.closePath()
+      // Draw horizontal lines with wave effect
+      for (let y = 0; y <= height; y += gridSize) {
+        ctx.beginPath()
+        
+        for (let x = 0; x <= width; x += 5) {
+          // Calculate wave offset based on position and time
+          const dx = x - mousePosition.current.x
+          const dy = y - mousePosition.current.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+          const mouseInfluence = Math.max(0, 1 - distance / 400)
 
-      const alpha = 0.03 - layer * 0.008
-      ctx.fillStyle = `rgba(${accentRgb}, ${alpha})`
-      ctx.fill()
+          const waveOffset = Math.sin(x * waveFrequency + time * waveSpeed) * waveAmplitude * (1 + mouseInfluence * 0.5) +
+                            Math.cos(x * waveFrequency * 0.5 + time * waveSpeed * 0.7) * waveAmplitude * 0.5
+
+          const adjustedY = y + waveOffset
+
+          if (x === 0) {
+            ctx.moveTo(x, adjustedY)
+          } else {
+            ctx.lineTo(x, adjustedY)
+          }
+        }
+        
+        ctx.stroke()
+      }
     }
 
-    // Draw mouse glow effect
+    drawWaveGrid()
+
+    // Draw subtle mouse glow effect
     if (mousePosition.current.x > 0 && mousePosition.current.y > 0) {
       const glowGradient = ctx.createRadialGradient(
         mousePosition.current.x,
@@ -62,14 +90,15 @@ export function InteractiveBackground() {
         0,
         mousePosition.current.x,
         mousePosition.current.y,
-        200
+        250
       )
-      glowGradient.addColorStop(0, `rgba(${accentRgb}, 0.08)`)
+      glowGradient.addColorStop(0, `rgba(${accentRgb}, 0.06)`)
+      glowGradient.addColorStop(0.5, `rgba(${accentRgb}, 0.02)`)
       glowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
       
       ctx.fillStyle = glowGradient
       ctx.beginPath()
-      ctx.arc(mousePosition.current.x, mousePosition.current.y, 200, 0, Math.PI * 2)
+      ctx.arc(mousePosition.current.x, mousePosition.current.y, 250, 0, Math.PI * 2)
       ctx.fill()
     }
   }, [])
@@ -107,7 +136,7 @@ export function InteractiveBackground() {
 
     const animate = () => {
       timeRef.current += 16 // approximately 60fps
-      drawWave(ctx, width, height, timeRef.current)
+      drawAnimatedGrid(ctx, width, height, timeRef.current)
       animationFrameId.current = requestAnimationFrame(animate)
     }
 
@@ -127,13 +156,13 @@ export function InteractiveBackground() {
         cancelAnimationFrame(animationFrameId.current)
       }
     }
-  }, [drawWave])
+  }, [drawAnimatedGrid])
 
   return (
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.5 }}
+      style={{ opacity: 1 }}
     />
   )
 }

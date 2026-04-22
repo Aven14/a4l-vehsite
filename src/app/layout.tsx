@@ -33,7 +33,7 @@ export default function RootLayout({
       <head>
         <Favicon />
       </head>
-      <body className="min-h-screen bg-dark-400 military-grid font-body">
+      <body className="min-h-screen bg-dark-400 font-body">
         <InteractiveBackground />
         <Providers>
           <AnalyticsTracker />
