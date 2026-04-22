@@ -2,146 +2,116 @@
 
 import { useEffect, useRef, useCallback } from 'react'
 
-interface MousePosition {
-  x: number
-  y: number
-}
-
 export function InteractiveBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const mousePosition = useRef<MousePosition>({ x: -1000, y: -1000 })
   const animationFrameId = useRef<number>()
   const timeRef = useRef<number>(0)
 
-  const drawAnimatedGrid = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number, time: number) => {
+  const drawTopographicMap = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number, time: number) => {
     ctx.clearRect(0, 0, width, height)
+    
+    // Dark background
+    ctx.fillStyle = '#0a0a0a'
+    ctx.fillRect(0, 0, width, height)
 
-    const accentRgb = '17, 134, 208'
-    const gridSize = 60
-    const perspectiveLines = 30 // Nombre de lignes horizontales pour la perspective
-    const waveAmplitude = 15
-    const waveSpeed = 0.0006
+    const lineSpacing = 30
+    const timeSpeed = 0.0003
+    const numLines = Math.ceil(height / lineSpacing) + 10
 
-    // Draw horizontal lines with wave effect coming towards viewer
-    for (let i = 0; i < perspectiveLines; i++) {
-      // Create perspective effect - lines closer together at top
-      const baseY = Math.pow(i / perspectiveLines, 1.5) * height
-      
+    // Draw topographic lines
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)'
+    ctx.lineWidth = 1
+
+    for (let i = -5; i < numLines; i++) {
       ctx.beginPath()
-      
-      for (let x = 0; x <= width; x += 4) {
-        // Calculate distance from mouse
-        const dx = x - mousePosition.current.x
-        const dy = baseY - mousePosition.current.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-        const mouseInfluence = Math.max(0, 1 - distance / 500)
 
-        // Wave coming towards viewer - stronger at bottom
-        const depthFactor = i / perspectiveLines
-        const waveOffset = 
-          Math.sin(x * 0.008 + time * waveSpeed + i * 0.3) * waveAmplitude * depthFactor * (1 + mouseInfluence * 0.6) +
-          Math.cos(x * 0.005 + time * waveSpeed * 0.7 + i * 0.2) * waveAmplitude * 0.5 * depthFactor +
-          Math.sin((x * 0.003 + time * waveSpeed * 0.5) * (1 + depthFactor)) * waveAmplitude * 0.3
+      for (let x = 0; x <= width; x += 3) {
+        // Create organic topographic wave patterns
+        const baseY = i * lineSpacing
 
-        const adjustedY = baseY + waveOffset
-
-        // Lines get more opaque as they get closer (at bottom)
-        const alpha = 0.02 + depthFactor * 0.06
-        ctx.strokeStyle = `rgba(${accentRgb}, ${alpha})`
-        ctx.lineWidth = 0.5 + depthFactor * 1.5
+        // Multiple overlapping sine waves for natural topographic feel
+        const y = baseY +
+          Math.sin(x * 0.003 + time * timeSpeed * 2 + i * 0.5) * 25 +
+          Math.cos(x * 0.005 + time * timeSpeed * 1.5 + i * 0.3) * 20 +
+          Math.sin((x * 0.002 + time * timeSpeed) * Math.cos(i * 0.2)) * 30 +
+          Math.cos(x * 0.007 + time * timeSpeed * 2.5) * 15 +
+          Math.sin(x * 0.001 + i * 0.8 + time * timeSpeed * 0.5) * 35
 
         if (x === 0) {
-          ctx.moveTo(x, adjustedY)
+          ctx.moveTo(x, y)
         } else {
-          ctx.lineTo(x, adjustedY)
+          ctx.lineTo(x, y)
         }
       }
+
+      // Vary opacity based on wave position for depth
+      const wavePosition = Math.sin(i * 0.3 + time * timeSpeed) * 0.5 + 0.5
+      const alpha = 0.08 + wavePosition * 0.12
+      ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`
       
       ctx.stroke()
     }
 
-    // Draw vertical perspective lines
-    const verticalLines = 25
-    for (let i = 0; i <= verticalLines; i++) {
-      const baseX = (i / verticalLines) * width
-      
-      ctx.beginPath()
-      ctx.lineWidth = 0.5
+    // Add some circular topographic features (like hills/mountains)
+    const numFeatures = 5
+    for (let f = 0; f < numFeatures; f++) {
+      const centerX = width * (0.2 + f * 0.15) + Math.sin(time * timeSpeed + f) * 100
+      const centerY = height * (0.3 + (f % 2) * 0.4) + Math.cos(time * timeSpeed * 0.8 + f) * 80
+      const numRings = 8
+      const maxRadius = 120
 
-      for (let y = 0; y <= height; y += 5) {
-        // Calculate distance from mouse
-        const dx = baseX - mousePosition.current.x
-        const dy = y - mousePosition.current.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-        const mouseInfluence = Math.max(0, 1 - distance / 500)
+      for (let r = 0; r < numRings; r++) {
+        const baseRadius = (r + 1) * (maxRadius / numRings)
+        
+        ctx.beginPath()
+        
+        for (let angle = 0; angle <= Math.PI * 2; angle += 0.05) {
+          // Distort the circle to make it organic
+          const distortion = 
+            Math.sin(angle * 3 + time * timeSpeed * 2 + f) * 15 +
+            Math.cos(angle * 5 + time * timeSpeed * 1.5) * 10 +
+            Math.sin(angle * 2 + f * 0.5) * 20
 
-        // Vertical lines also wave but less
-        const depthFactor = y / height
-        const waveOffset = 
-          Math.sin(y * 0.003 + time * waveSpeed * 0.5) * waveAmplitude * 0.3 * depthFactor +
-          Math.cos(y * 0.002 + time * waveSpeed * 0.3) * 3
+          const radius = baseRadius + distortion
+          const x = centerX + Math.cos(angle) * radius
+          const y = centerY + Math.sin(angle) * radius
 
-        const adjustedX = baseX + waveOffset
-
-        // Fades at top, stronger at bottom
-        const alpha = 0.01 + depthFactor * 0.04
-        ctx.strokeStyle = `rgba(${accentRgb}, ${alpha})`
-
-        if (y === 0) {
-          ctx.moveTo(adjustedX, y)
-        } else {
-          ctx.lineTo(adjustedX, y)
+          if (angle === 0) {
+            ctx.moveTo(x, y)
+          } else {
+            ctx.lineTo(x, y)
+          }
         }
+
+        ctx.closePath()
+        const alpha = 0.05 + (1 - r / numRings) * 0.1
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`
+        ctx.stroke()
       }
-      
-      ctx.stroke()
     }
 
-    // Draw additional diagonal waves for depth
-    ctx.lineWidth = 0.3
-    for (let i = -height; i <= width; i += 100) {
+    // Add flowing stream lines
+    ctx.lineWidth = 0.5
+    for (let s = 0; s < 3; s++) {
       ctx.beginPath()
       
-      for (let x = 0; x <= width; x += 5) {
-        const baseY = (x + i) * 0.5
-        if (baseY < 0 || baseY > height) continue
+      for (let x = 0; x <= width; x += 2) {
+        const y = height * (0.25 + s * 0.25) +
+          Math.sin(x * 0.004 + time * timeSpeed * 3 + s * 2) * 50 +
+          Math.cos(x * 0.006 + time * timeSpeed * 2) * 40 +
+          Math.sin(x * 0.002 + time * timeSpeed) * 60
 
-        const depthFactor = baseY / height
-        const waveOffset = 
-          Math.sin((x + baseY) * 0.006 + time * waveSpeed * 1.2) * waveAmplitude * 0.4 * depthFactor
-
-        const adjustedY = baseY + waveOffset
-        const alpha = 0.015 + depthFactor * 0.025
-        ctx.strokeStyle = `rgba(${accentRgb}, ${alpha})`
+        const alpha = 0.1 + Math.sin(x * 0.01 + time * timeSpeed * 2) * 0.05
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`
 
         if (x === 0) {
-          ctx.moveTo(x, adjustedY)
+          ctx.moveTo(x, y)
         } else {
-          ctx.lineTo(x, adjustedY)
+          ctx.lineTo(x, y)
         }
       }
       
       ctx.stroke()
-    }
-
-    // Draw mouse glow effect
-    if (mousePosition.current.x > 0 && mousePosition.current.y > 0) {
-      const glowGradient = ctx.createRadialGradient(
-        mousePosition.current.x,
-        mousePosition.current.y,
-        0,
-        mousePosition.current.x,
-        mousePosition.current.y,
-        350
-      )
-      glowGradient.addColorStop(0, `rgba(${accentRgb}, 0.1)`)
-      glowGradient.addColorStop(0.5, `rgba(${accentRgb}, 0.03)`)
-      glowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
-      
-      ctx.fillStyle = glowGradient
-      ctx.beginPath()
-      ctx.arc(mousePosition.current.x, mousePosition.current.y, 350, 0, Math.PI * 2)
-      ctx.fill()
     }
   }, [])
 
@@ -165,20 +135,9 @@ export function InteractiveBackground() {
     canvas.width = width
     canvas.height = height
 
-    const handleMouseMove = (e: MouseEvent) => {
-      mousePosition.current = { x: e.clientX, y: e.clientY }
-    }
-
-    const handleMouseLeave = () => {
-      mousePosition.current = { x: -1000, y: -1000 }
-    }
-
-    window.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseleave', handleMouseLeave)
-
     const animate = () => {
       timeRef.current += 16
-      drawAnimatedGrid(ctx, width, height, timeRef.current)
+      drawTopographicMap(ctx, width, height, timeRef.current)
       animationFrameId.current = requestAnimationFrame(animate)
     }
 
@@ -192,13 +151,11 @@ export function InteractiveBackground() {
 
     return () => {
       window.removeEventListener('resize', handleResize)
-      window.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseleave', handleMouseLeave)
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current)
       }
     }
-  }, [drawAnimatedGrid])
+  }, [drawTopographicMap])
 
   return (
     <canvas
