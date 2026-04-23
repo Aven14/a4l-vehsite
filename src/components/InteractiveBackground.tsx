@@ -126,11 +126,11 @@ export function InteractiveBackground() {
     if (!ctx) return
 
     let width = window.innerWidth
-    let height = window.innerHeight
+    let height = Math.max(document.documentElement.scrollHeight, window.innerHeight)
     
     const updateCanvasSize = () => {
       width = window.innerWidth
-      height = window.innerHeight
+      height = Math.max(document.documentElement.scrollHeight, window.innerHeight)
       canvas.width = width
       canvas.height = height
     }
@@ -150,10 +150,20 @@ export function InteractiveBackground() {
       updateCanvasSize()
     }
 
+    // Update on scroll to cover full page height
+    const handleScroll = () => {
+      const newHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight)
+      if (newHeight !== height) {
+        updateCanvasSize()
+      }
+    }
+
     window.addEventListener('resize', handleResize)
+    window.addEventListener('scroll', handleScroll)
 
     return () => {
       window.removeEventListener('resize', handleResize)
+      window.removeEventListener('scroll', handleScroll)
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current)
       }
