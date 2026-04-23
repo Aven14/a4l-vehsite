@@ -155,9 +155,14 @@ export default function VehiclesPage() {
         <p className="text-gray-500 text-sm mb-6">{filteredAndSortedVehicles.length} véhicule(s)</p>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredAndSortedVehicles.map(vehicle => {
+          {filteredAndSortedVehicles.map((vehicle, index) => {
             return (
-              <Link href={`/vehicles/${vehicle.id}`} key={vehicle.id} className="card card-hover overflow-hidden group">
+              <Link 
+                href={`/vehicles/${vehicle.id}`} 
+                key={vehicle.id} 
+                className="card card-hover overflow-hidden group animate-card-skew"
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
                 <div className="aspect-video bg-dark-300 relative overflow-hidden">
                   {vehicle.imageList[0] ? (
                     <Image src={vehicle.imageList[0]} alt={vehicle.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />

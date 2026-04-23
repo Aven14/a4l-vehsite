@@ -93,8 +93,13 @@ export default function BrandsPage() {
         <p className="text-gray-500 text-sm mb-6">{filteredAndSortedBrands.length} marque(s)</p>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredAndSortedBrands.map(brand => (
-            <Link href={`/brands/${brand.id}`} key={brand.id} className="card card-hover p-6 text-center">
+          {filteredAndSortedBrands.map((brand, index) => (
+            <Link 
+              href={`/brands/${brand.id}`} 
+              key={brand.id} 
+              className="card card-hover p-6 text-center animate-card-skew"
+              style={{ animationDelay: `${index * 0.05}s` }}
+            >
               <div className="w-20 h-20 mx-auto mb-4 bg-dark-300 rounded-xl flex items-center justify-center">
                 {brand.logo ? (
                   <Image src={brand.logo} alt={brand.name} width={48} height={48} className="w-12 h-12 object-contain" />
