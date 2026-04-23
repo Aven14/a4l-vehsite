@@ -97,7 +97,7 @@ export default function BrandsPage() {
             <Link 
               href={`/brands/${brand.id}`} 
               key={brand.id} 
-              className="card p-6 text-center animate-card-skew"
+              className="card card-3d-hover p-6 text-center animate-card-skew"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
               <div className="w-20 h-20 mx-auto mb-4 bg-dark-300 rounded-xl flex items-center justify-center">
