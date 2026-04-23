@@ -191,8 +191,11 @@ body {
 .card {
   @apply bg-dark-100 border border-gray-800 rounded-xl overflow-hidden;
   position: relative;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform-origin: bottom left;
+  transform: perspective(1000px);
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.3s ease,
+              box-shadow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .card::after {
@@ -214,19 +217,19 @@ body {
 }
 
 .card:hover {
-  border-color: rgba(var(--accent-color-rgb, 17, 134, 208), 0.4) !important;
-  transform: perspective(1000px) rotateX(-8deg) rotateY(12deg) translateZ(30px) translateY(-12px) !important;
+  transform: perspective(1000px) rotateX(-8deg) rotateY(12deg) translateZ(30px) translateY(-12px);
+  border-color: rgba(var(--accent-color-rgb, 17, 134, 208), 0.4);
   box-shadow: 
     -25px 25px 50px rgba(var(--accent-color-rgb, 17, 134, 208), 0.4),
-    0 30px 40px -10px rgba(var(--accent-color-rgb, 17, 134, 208), 0.3) !important;
+    0 30px 40px -10px rgba(var(--accent-color-rgb, 17, 134, 208), 0.3);
 }
 
 .card-hover {
-  /* Cette classe est maintenant gérée par .card directement */
+  /* Géré par .card maintenant */
 }
 
 .card-hover:hover {
-  /* Cette classe est maintenant gérée par .card:hover directement */
+  /* Géré par .card:hover maintenant */
 }
 
 .nav-interactive {
