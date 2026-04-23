@@ -32,13 +32,21 @@ export function InteractiveBackground() {
       for (let x = 0; x < cols; x++) {
         let height = 0
         
-        // Multiple organic layers
-        height += Math.sin(x * 0.15 + time * timeSpeed * 2) * Math.cos(y * 0.12 + time * timeSpeed * 1.5) * 50
-        height += Math.sin(x * 0.08 - time * timeSpeed * 1.3) * Math.sin(y * 0.1 + time * timeSpeed * 1.8) * 40
-        height += Math.cos(x * 0.06 + y * 0.07 + time * timeSpeed * 0.9) * 45
-        height += Math.sin((x + y) * 0.05 + time * timeSpeed * 1.6) * 35
-        height += Math.cos(x * 0.09 - y * 0.05 + time * timeSpeed * 1.2) * 30
-        height += Math.sin(x * 0.04 + time * timeSpeed * 2.2) * Math.cos(y * 0.06 - time * timeSpeed * 1.9) * 25
+        // Layer 1: Large slow-moving features with asymmetry
+        height += Math.sin(x * 0.12 + time * timeSpeed * 2) * Math.cos(y * 0.15 + time * timeSpeed * 1.5) * 50
+        height += Math.sin((x + y) * 0.1 + time * timeSpeed * 1.8) * Math.cos((x - y) * 0.08 + time * timeSpeed * 2.2) * 40
+        // Layer 2: Medium features with rotation
+        height += Math.sin(x * 0.18 - time * timeSpeed * 1.3) * Math.sin(y * 0.2 + time * timeSpeed * 1.8) * 35
+        height += Math.cos(x * 0.14 + y * 0.11 + time * timeSpeed * 0.9) * Math.sin(x * 0.07 - y * 0.13 + time * timeSpeed * 1.4) * 45
+        // Layer 3: Small fast distorted features
+        height += Math.sin((x * 0.25 + y * 0.2) + time * timeSpeed * 1.6) * 30
+        height += Math.cos((x * 0.2 - y * 0.25) + time * timeSpeed * 1.2) * 25
+        // Layer 4: Complex interference patterns
+        height += Math.sin(x * 0.09 + time * timeSpeed * 2.2) * Math.cos(y * 0.11 - time * timeSpeed * 1.9) * Math.sin((x + y) * 0.06 + time * timeSpeed * 1.5) * 35
+        height += Math.cos(x * 0.16 - y * 0.09 + time * timeSpeed * 1.7) * Math.sin(x * 0.13 + y * 0.17 + time * timeSpeed * 2.1) * 28
+        // Layer 5: Fine distortion
+        height += Math.sin(x * 0.3 + y * 0.25 + time * timeSpeed * 3) * 15
+        height += Math.cos(x * 0.28 - y * 0.32 + time * timeSpeed * 2.7) * 12
         
         terrain[y][x] = height
       }
