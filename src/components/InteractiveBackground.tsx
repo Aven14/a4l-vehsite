@@ -6,18 +6,23 @@ export function InteractiveBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationFrameId = useRef<number>()
   const timeRef = useRef<number>(0)
+  const scrollYRef = useRef<number>(0)
 
-  const drawTopographicMap = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number, time: number) => {
+  const drawTopographicMap = useCallback((ctx: CanvasRenderingContext2D, width: number, height: number, time: number, scrollY: number) => {
     ctx.clearRect(0, 0, width, height)
     
     // Dark background
     ctx.fillStyle = '#0a0a0a'
     ctx.fillRect(0, 0, width, height)
 
+    // Apply scroll offset to create movement effect
+    ctx.save()
+    ctx.translate(0, -scrollY * 0.3) // Parallax effect (slower than scroll)
+
     const timeSpeed = 0.0001
     const gridSize = 8
     const cols = Math.floor(width / gridSize) + 1
-    const rows = Math.floor(height / gridSize) + 1
+    const rows = Math.floor((height + scrollY * 0.3) / gridSize) + 2
 
     // Generate terrain height map
     const terrain: number[][] = []
@@ -116,6 +121,8 @@ export function InteractiveBackground() {
       // Un seul stroke pour tout le niveau (beaucoup plus rapide)
       ctx.stroke()
     }
+    
+    ctx.restore()
   }, [])
 
   useEffect(() => {
@@ -126,11 +133,11 @@ export function InteractiveBackground() {
     if (!ctx) return
 
     let width = window.innerWidth
-    let height = Math.max(document.documentElement.scrollHeight, window.innerHeight)
+    let height = window.innerHeight
     
     const updateCanvasSize = () => {
       width = window.innerWidth
-      height = Math.max(document.documentElement.scrollHeight, window.innerHeight)
+      height = window.innerHeight
       canvas.width = width
       canvas.height = height
     }
@@ -140,7 +147,8 @@ export function InteractiveBackground() {
 
     const animate = () => {
       timeRef.current += 16
-      drawTopographicMap(ctx, width, height, timeRef.current)
+      scrollYRef.current = window.scrollY
+      drawTopographicMap(ctx, width, height, timeRef.current, scrollYRef.current)
       animationFrameId.current = requestAnimationFrame(animate)
     }
 
@@ -150,16 +158,12 @@ export function InteractiveBackground() {
       updateCanvasSize()
     }
 
-    // Update on scroll to cover full page height
     const handleScroll = () => {
-      const newHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight)
-      if (newHeight !== height) {
-        updateCanvasSize()
-      }
+      scrollYRef.current = window.scrollY
     }
 
     window.addEventListener('resize', handleResize)
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
       window.removeEventListener('resize', handleResize)
