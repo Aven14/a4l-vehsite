@@ -340,3 +340,17 @@ body {
   animation: cardSkewIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   opacity: 0;
 }
+
+/* Hover animation - coin haut-droit avance */
+.card-hover-skew {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: bottom left;
+  transform: perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0);
+}
+
+.card-hover-skew:hover {
+  transform: perspective(1000px) rotateX(-5deg) rotateY(8deg) translateZ(20px) translateY(-8px);
+  box-shadow: 
+    -20px 20px 40px rgba(var(--accent-color-rgb, 17, 134, 208), 0.3),
+    0 25px 35px -5px rgba(var(--accent-color-rgb, 17, 134, 208), 0.25);
+}

@@ -160,7 +160,7 @@ export default function VehiclesPage() {
               <Link 
                 href={`/vehicles/${vehicle.id}`} 
                 key={vehicle.id} 
-                className="card card-hover overflow-hidden group animate-card-skew"
+                className="card card-hover overflow-hidden group animate-card-skew card-hover-skew"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <div className="aspect-video bg-dark-300 relative overflow-hidden">
