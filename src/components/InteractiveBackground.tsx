@@ -15,7 +15,7 @@ export function InteractiveBackground() {
     ctx.fillRect(0, 0, width, height)
 
     const timeSpeed = 0.0001
-    const gridSize = 20
+    const gridSize = 8
     const cols = Math.floor(width / gridSize) + 1
     const rows = Math.floor(height / gridSize) + 1
 
